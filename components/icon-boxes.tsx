@@ -5,7 +5,7 @@ const IconBoxes = () => {
   return (
     <div>
       <Card>
-        <CardContent className="grid md:grid-cols-4 gap-4 p-4">
+        <CardContent className="wrapper grid md:grid-cols-4 gap-4 p-4">
           <div className="space-y-2">
             <ShoppingBag />
             <div className="text-sm font-bold">Free Shipping</div>
