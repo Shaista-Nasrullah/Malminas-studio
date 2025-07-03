@@ -63,7 +63,7 @@ const DealCountdown = () => {
     time.seconds === 0
   ) {
     return (
-      <section className="grid grid-cols-1 md:grid-cols-2 my-20">
+      <section className="wrapper grid grid-cols-1 md:grid-cols-2 my-20">
         <div className="flex flex-col gap-2 justify-center">
           <h3 className="text-3xl font-bold">Deal Has Ended</h3>
           <p>
@@ -78,7 +78,7 @@ const DealCountdown = () => {
         </div>
         <div className="flex justify-center">
           <Image
-            src="/images/promo.jpg"
+            src="/images/m6.png"
             alt="promotion"
             width={300}
             height={200}

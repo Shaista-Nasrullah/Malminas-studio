@@ -44,8 +44,8 @@ const Header = async () => {
               <Image
                 src="/images/logo.png"
                 alt="Kuchi Jewels Logo"
-                height={99}
-                width={99}
+                height={119}
+                width={119}
                 priority={true}
                 className="h-auto w-auto max-h-16" // Added max-h for safety
               />
