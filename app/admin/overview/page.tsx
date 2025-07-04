@@ -12,11 +12,8 @@ import { formatCurrency, formatDateTime, formatNumber } from "@/lib/utils";
 import { BadgeDollarSign, Barcode, CreditCard, Users } from "lucide-react";
 import { Metadata } from "next";
 import Link from "next/link";
-// import Charts from "./charts";
 import { requireAdmin } from "@/lib/auth-guard";
-// import dynamic from "next/dynamic";
-
-// const Charts = dynamic(() => import("./charts"), { ssr: false });
+import Charts from "./charts";
 
 export const metadata: Metadata = {
   title: "Admin Dashboard",
@@ -46,7 +43,11 @@ const AdminOverviewPage = async () => {
         </Card>
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Sales</CardTitle>
+            <CardTitle className="text-sm font-medium">
+              <Link href="/admin/orders" className="hover:underline">
+                Sales
+              </Link>
+            </CardTitle>
             <CreditCard />
           </CardHeader>
           <CardContent>
@@ -57,7 +58,11 @@ const AdminOverviewPage = async () => {
         </Card>
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Customers</CardTitle>
+            <CardTitle className="text-sm font-medium">
+              <Link href="/admin/users" className="hover:underline">
+                Customers
+              </Link>
+            </CardTitle>
             <Users />
           </CardHeader>
           <CardContent>
@@ -68,7 +73,10 @@ const AdminOverviewPage = async () => {
         </Card>
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Products</CardTitle>
+            {/* <CardTitle className="text-sm font-medium">Products</CardTitle> */}
+            <Link href="/admin/products" className="hover:underline">
+              Products
+            </Link>
             <Barcode />
           </CardHeader>
           <CardContent>
@@ -84,12 +92,7 @@ const AdminOverviewPage = async () => {
             <CardTitle>Overview</CardTitle>
           </CardHeader>
           <CardContent>
-            {/* <Charts
-              data={{
-                salesData: summary.salesData,
-              }}
-            /> */}
-            <p>Charts</p>
+            <Charts data={{ salesData: summary.salesData }} />
           </CardContent>
         </Card>
         <Card className="col-span-3">
@@ -110,7 +113,7 @@ const AdminOverviewPage = async () => {
                 {summary.latestSales.map((order) => (
                   <TableRow key={order.id}>
                     <TableCell>
-                      {order?.User?.name ? order.User.name : "Deleted User"}
+                      {order?.user?.name ? order.user.name : "Deleted User"}
                     </TableCell>
                     <TableCell>
                       {formatDateTime(order.createdAt).dateOnly}

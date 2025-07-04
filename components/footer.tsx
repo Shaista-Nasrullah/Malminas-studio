@@ -4,16 +4,16 @@ import {
   Facebook,
   Instagram,
   Youtube,
-  Twitter,
-} from "lucide-react"; // Note: Using Twitter for Pinterest/TikTok as placeholders
+  // Using more appropriate icons from react-icons
+} from "lucide-react";
+import { FaTiktok, FaPinterest } from "react-icons/fa";
 import Image from "next/image";
 import Link from "next/link";
+import { COPYRIGHT_HOLDER } from "@/lib/constants";
 
 const Footer = async () => {
-  // 1. Fetch the dynamic category links
   const categories = await getFooterCategories();
 
-  // Helper component for list items to reduce repetition
   const FooterLink = ({
     href,
     children,
@@ -29,28 +29,30 @@ const Footer = async () => {
   );
 
   return (
-    // 2. Main footer container with the correct background color
     <footer className="text-white/80" style={{ backgroundColor: "#998B20" }}>
       <div className="wrapper mx-auto px-4 pt-16 pb-8">
-        {/* Main grid for the footer content */}
         <div className="grid grid-cols-1 gap-12 md:grid-cols-2 lg:grid-cols-4">
-          {/* Column 1: Brand Info & Subscribe */}
+          {/* --- Column 1: Brand Story & Subscribe --- */}
           <div className="space-y-6">
             <Link href="/">
               <Image
                 src="/images/logo-removebg-preview.png"
                 alt="Kuchi Jewels Logo"
-                width={150}
-                height={150}
+                width={190}
+                height={220}
               />
             </Link>
+            {/* HIGHLIGHT: Replaced generic text with a brand mission statement */}
             <h3 className="text-lg font-bold text-white">
-              Welcome to Kuchijewels PAKISTAN
+              Weaving Heritage into Every Thread
             </h3>
             <p className="text-sm">
-              Online store of Afghan Kuchi Tribal, Pakistani, Indian & Nepali
-              Jewelry, accessories & cloth
+              Discover the vibrant artistry of Pashtoon embroidery, a timeless
+              tradition passed down through generations. Each piece in our
+              collection is a testament to skillful hands and rich cultural
+              heritage.
             </p>
+            {/* Using a mix of icons for better brand representation */}
             <div className="flex space-x-4">
               <Link href="#" aria-label="Facebook">
                 <Facebook size={20} />
@@ -61,12 +63,16 @@ const Footer = async () => {
               <Link href="#" aria-label="YouTube">
                 <Youtube size={20} />
               </Link>
-              <Link href="#" aria-label="Twitter">
-                <Twitter size={20} />
+              <Link href="#" aria-label="TikTok">
+                <FaTiktok size={20} />
+              </Link>
+              <Link href="#" aria-label="Pinterest">
+                <FaPinterest size={20} />
               </Link>
             </div>
+            {/* HIGHLIGHT: Changed the subscription call-to-action to be more thematic */}
             <h3 className="text-lg font-bold text-white pt-4">
-              Subscribe to our emails
+              Follow the Thread of Tradition
             </h3>
             <form className="relative">
               <input
@@ -84,12 +90,13 @@ const Footer = async () => {
             </form>
           </div>
 
-          {/* Column 2: Useful Links */}
+          {/* --- Column 2: Useful Links --- */}
           <div className="space-y-6">
             <h3 className="text-lg font-bold text-white">Useful Links</h3>
             <ul className="space-y-3">
               <FooterLink href="/search">Search</FooterLink>
-              <FooterLink href="/about">About Us</FooterLink>
+              {/* HIGHLIGHT: Changed "About Us" to "Our Story" to better fit the brand narrative */}
+              <FooterLink href="/about">Our Story</FooterLink>
               <FooterLink href="/policies/shipping">Shipping Policy</FooterLink>
               <FooterLink href="/policies/terms">Terms & Conditions</FooterLink>
               <FooterLink href="/policies/refund">
@@ -100,14 +107,14 @@ const Footer = async () => {
             </ul>
           </div>
 
-          {/* Column 3: Categories (Dynamic) */}
+          {/* --- Column 3: Categories (Dynamic) --- */}
           <div className="space-y-6">
             <h3 className="text-lg font-bold text-white">Categories</h3>
             <ul className="space-y-3">
               {categories.map((category) => (
                 <FooterLink
                   key={category.slug}
-                  href={`/products?category=${category.slug}`}
+                  href={`/collections/${category.slug}`}
                 >
                   {category.name}
                 </FooterLink>
@@ -115,7 +122,7 @@ const Footer = async () => {
             </ul>
           </div>
 
-          {/* Column 4: Contact */}
+          {/* --- Column 4: Contact --- */}
           <div className="space-y-6">
             <h3 className="text-lg font-bold text-white">Contact</h3>
             <div className="space-y-3 text-sm">
@@ -127,21 +134,18 @@ const Footer = async () => {
                 href="mailto:sales@kuchijewels.com"
                 className="block hover:text-white"
               >
-                sales@kuchijewels.com
-              </a>
-              <a
-                href="mailto:kuchijewels@gmail.com"
-                className="block hover:text-white"
-              >
-                kuchijewels@gmail.com
+                sales@MalminasTB.com
               </a>
             </div>
           </div>
         </div>
 
-        {/* Bottom Bar */}
+        {/* --- Bottom Bar --- */}
         <div className="mt-16 pt-8 border-t border-white/20 flex flex-col sm:flex-row items-center justify-between text-sm space-y-4 sm:space-y-0">
-          <p>© {new Date().getFullYear()}, Kuchijewels Pk</p>
+          <p>
+            © {new Date().getFullYear()}, {COPYRIGHT_HOLDER} All rights
+            reserved.
+          </p>
           <div className="flex flex-wrap justify-center gap-x-4 gap-y-2">
             <Link href="/policies/refund" className="hover:text-white">
               Refund policy
@@ -163,20 +167,3 @@ const Footer = async () => {
 };
 
 export default Footer;
-
-// import { APP_NAME } from "@/lib/constants";
-
-// const Footer = () => {
-//   const currentYear = new Date().getFullYear();
-//   return (
-//     <>
-//       <footer className="border-t">
-//         <div className="p-5 flex-center">
-//           {currentYear} {APP_NAME}. All Rights Reserved
-//         </div>
-//       </footer>
-//     </>
-//   );
-// };
-
-// export default Footer;

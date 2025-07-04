@@ -14,10 +14,19 @@ const Search = () => {
   return (
     <>
       {/* 1. This is the initial search icon in your header */}
-      <Button onClick={openSearch} variant="ghost" size="icon">
-        <SearchIcon className="h-5 w-5" />
+      {/* <Button onClick={openSearch} variant="ghost">
+        <SearchIcon size={26} />
         <span className="sr-only">Open search</span>
-      </Button>
+      </Button> */}
+      <button
+        type="button" // Good practice to prevent accidental form submission
+        onClick={openSearch}
+        // Add classes to make it look and feel like a ghost button
+        className="p-1 rounded-full hover:bg-gray-100 transition-colors"
+        aria-label="Open search" // Use aria-label for accessibility on icon-only buttons
+      >
+        <SearchIcon size={24} />
+      </button>
 
       {/* 2. Render the overlay and search bar ONLY when isOpen is true */}
       {isOpen && (

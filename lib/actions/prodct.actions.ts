@@ -113,6 +113,12 @@ export async function getAllProducts({
 
   const data = await prisma.product.findMany({
     where: whereClause,
+
+    include: {
+      category: true,
+      subCategory: true,
+    },
+
     orderBy:
       sort === "lowest"
         ? { price: "asc" }

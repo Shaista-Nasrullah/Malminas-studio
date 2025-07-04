@@ -15,12 +15,12 @@ export default function AdminLayout({
     <>
       <div className="flex flex-col">
         <div className="border-b container mx-auto">
-          <div className="flex items-center h-16 px-4">
-            <Link href="/" className="w-22">
+          <div className="flex items-center h-25 px-4">
+            <Link href="/" className="w-32">
               <Image
-                src="/images/logo.svg"
-                height={48}
-                width={48}
+                src="/images/logo-remvedBg.png"
+                height={88}
+                width={120}
                 alt={APP_NAME}
               />
             </Link>

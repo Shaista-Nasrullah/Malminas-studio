@@ -10,7 +10,6 @@ import {
 import { auth, signIn, signOut } from "@/auth";
 import { isRedirectError } from "next/dist/client/components/redirect-error";
 import { hashSync } from "bcrypt-ts-edge";
-// import { PrismaClient } from "../generated/prisma";
 import { formatError } from "../utils";
 import { ShippingAddress } from "@/types";
 import { prisma } from "@/db/prisma";
@@ -19,20 +18,25 @@ import { PAGE_SIZE } from "../constants";
 import { Prisma } from "@prisma/client";
 import { revalidatePath } from "next/cache";
 
-// const prisma = new PrismaClient();
-
+// sign in the user with credentials
 // sign in the user with credentials
 export async function signInWithCredentials(
   prevState: unknown,
   formData: FormData
 ) {
   try {
+    // HIGHLIGHT: 1. Read the `rememberMe` value from the formData.
+    // It comes in as a string ("true" or "false"), so we convert it to a boolean.
+    const rememberMe = formData.get("rememberMe") === "true";
+
     const user = signInFormSchema.parse({
       email: formData.get("email"),
       password: formData.get("password"),
     });
 
-    await signIn("credentials", user);
+    // HIGHLIGHT: 2. Pass the `rememberMe` boolean to the `signIn` function.
+    // We spread the existing user object and add the rememberMe property.
+    await signIn("credentials", { ...user, rememberMe });
 
     return { success: true, message: "Signed in successfully" };
   } catch (error) {
@@ -43,6 +47,27 @@ export async function signInWithCredentials(
     return { success: false, message: "Invalid email or password" };
   }
 }
+// export async function signInWithCredentials(
+//   prevState: unknown,
+//   formData: FormData
+// ) {
+//   try {
+//     const user = signInFormSchema.parse({
+//       email: formData.get("email"),
+//       password: formData.get("password"),
+//     });
+
+//     await signIn("credentials", user);
+
+//     return { success: true, message: "Signed in successfully" };
+//   } catch (error) {
+//     if (isRedirectError(error)) {
+//       throw error;
+//     }
+
+//     return { success: false, message: "Invalid email or password" };
+//   }
+// }
 
 //Sign user out
 export async function signOutUser() {

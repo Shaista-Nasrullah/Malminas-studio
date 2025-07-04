@@ -27,7 +27,7 @@ const Header = async () => {
           HIGHLIGHT: Replaced `flex` with `grid` for perfect centering.
           This creates three columns, ensuring the middle one is always centered.
         */}
-        <div className="wrapper grid grid-cols-3 h-20 items-center">
+        <div className="wrapper grid grid-cols-3 h-36 items-center">
           {/* --- Left Section --- */}
           {/* HIGHLIGHT: This column is aligned to the start. */}
           <div className="flex items-center justify-start gap-2 md:gap-3">
@@ -40,14 +40,14 @@ const Header = async () => {
           {/* --- Center Section: Logo --- */}
           {/* HIGHLIGHT: This column is centered. `flex-1` is removed. */}
           <div className="flex justify-center">
-            <Link href="/" aria-label="Kuchi Jewels Homepage">
+            <Link href="/" aria-label="Malminas Traditional Boutique Homepage">
               <Image
-                src="/images/logo.png"
-                alt="Kuchi Jewels Logo"
-                height={119}
-                width={119}
+                src="/images/logo-remvedBg.png"
+                alt="Malminas Traditional Boutique"
+                height={150}
+                width={180}
                 priority={true}
-                className="h-auto w-auto max-h-16" // Added max-h for safety
+                // className="h-auto w-auto max-h-16"
               />
             </Link>
           </div>
