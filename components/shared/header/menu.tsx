@@ -10,7 +10,7 @@ const Menu = ({ count }: { count: number }) => {
           href="/cart"
           aria-label={`Shopping Cart with ${count} items`}
           className="relative"
-        >
+          legacyBehavior>
           <HiOutlineShoppingBag size={26} />
 
           {count > 0 && (

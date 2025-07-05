@@ -54,7 +54,7 @@ const PlaceOrderPage = async () => {
                 {userAddress.postalCode}, {userAddress.country}{" "}
               </p>
               <div className="mt-3">
-                <Link href="/shipping-address">
+                <Link href="/shipping-address" legacyBehavior>
                   <Button variant="outline">Edit</Button>
                 </Link>
               </div>
@@ -66,7 +66,7 @@ const PlaceOrderPage = async () => {
               <h2 className="text-xl pb-4">Payment Method</h2>
               <p>{user.paymentMethod}</p>
               <div className="mt-3">
-                <Link href="/payment-method">
+                <Link href="/payment-method" legacyBehavior>
                   <Button variant="outline">Edit</Button>
                 </Link>
               </div>
@@ -91,7 +91,7 @@ const PlaceOrderPage = async () => {
                         <Link
                           href={`/product/{item.slug}`}
                           className="flex items-center"
-                        >
+                          legacyBehavior>
                           <Image
                             src={item.image}
                             alt={item.name}

@@ -38,7 +38,7 @@ const AdminOrdersPage = async (props: {
         {searchText && (
           <div>
             Filtered by <i>&quot;{searchText}&quot;</i>{" "}
-            <Link href="/admin/orders">
+            <Link href="/admin/orders" legacyBehavior>
               <Button variant="outline" size="sm">
                 Remove Filter
               </Button>

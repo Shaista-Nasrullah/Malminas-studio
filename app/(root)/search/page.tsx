@@ -144,7 +144,7 @@ const SearchPage = async (props: {
                 <Link
                   className={`${category === x.category && "font-bold"}`}
                   href={getFilterUrl({ c: x.category })}
-                >
+                  legacyBehavior>
                   {x.category}
                 </Link>
               </li>
@@ -168,7 +168,7 @@ const SearchPage = async (props: {
                 <Link
                   className={`${price === p.value && "font-bold"}`}
                   href={getFilterUrl({ p: p.value })}
-                >
+                  legacyBehavior>
                   {p.name}
                 </Link>
               </li>
@@ -192,7 +192,7 @@ const SearchPage = async (props: {
                 <Link
                   className={`${rating === r.toString() && "font-bold"}`}
                   href={getFilterUrl({ r: `${r}` })}
-                >
+                  legacyBehavior>
                   {`${r} stars & up`}
                 </Link>
               </li>
@@ -224,7 +224,7 @@ const SearchPage = async (props: {
                 key={s}
                 className={`mx-2 ${sort == s && "font-bold"}`}
                 href={getFilterUrl({ s })}
-              >
+                legacyBehavior>
                 {s}
               </Link>
             ))}

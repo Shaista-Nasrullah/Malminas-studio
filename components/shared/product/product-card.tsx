@@ -30,7 +30,7 @@ const ProductCard = ({ product }: { product: Product }) => {
           </div>
         ) : null}
 
-        <Link href={`/product/${product.slug}`}>
+        <Link href={`/product/${product.slug}`} legacyBehavior>
           <Image
             src={product.images[0]}
             alt={product.name}
@@ -41,7 +41,7 @@ const ProductCard = ({ product }: { product: Product }) => {
         </Link>
       </CardHeader>
       <CardContent className="p-4 grid gap-4">
-        <Link href={`/product/${product.slug}`}>
+        <Link href={`/product/${product.slug}`} legacyBehavior>
           <h2 className="text-sm font-medium">{product.name}</h2>
         </Link>
         <div className="flex-between gap-2">
@@ -51,16 +51,16 @@ const ProductCard = ({ product }: { product: Product }) => {
           {product.stock > 0 ? (
             hasDiscount ? (
               // If there IS a discount, show both prices
-              <div className="flex items-baseline gap-2">
+              (<div className="flex items-baseline gap-2">
                 <p className="text-gray-500 line-through text-sm">
                   Rs.{originalPrice.toFixed(0)}
                 </p>
                 {/* Use your existing ProductPrice component for the final price */}
                 <ProductPrice value={salePrice} />
-              </div>
+              </div>)
             ) : (
               // If NO discount, show the original price as before
-              <ProductPrice value={originalPrice} />
+              (<ProductPrice value={originalPrice} />)
             )
           ) : (
             <p className="text-destructive">Out Of Stock</p>

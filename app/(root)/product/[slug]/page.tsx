@@ -58,9 +58,8 @@ const ProductDetailsPage = async (props: {
               <div className="flex items-baseline gap-3 mt-2">
                 {hasDiscount && (
                   // Show original price with strikethrough if discounted
-                  <p className="text-2xl text-gray-400 line-through">
-                    Rs.{originalPrice.toFixed(2)}
-                  </p>
+                  (<p className="text-2xl text-gray-400 line-through">Rs.{originalPrice.toFixed(2)}
+                  </p>)
                 )}
                 {/* Always show the final price prominently */}
                 <ProductPrice
@@ -69,9 +68,9 @@ const ProductDetailsPage = async (props: {
                 />
                 {hasDiscount && (
                   // Add a badge to highlight the savings
-                  <Badge className="bg-red-500 text-white hover:bg-red-600">
+                  (<Badge className="bg-red-500 text-white hover:bg-red-600">
                     {product.discountPercentage}% OFF
-                  </Badge>
+                                      </Badge>)
                 )}
               </div>
               {/* --- END OF PRICE DISPLAY UPDATE --- */}

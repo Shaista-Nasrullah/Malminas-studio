@@ -81,7 +81,7 @@ export function CategoryDrawer({ categories }: { categories: Category[] }) {
                         <Link
                           href={`/collections/${category.slug}`}
                           className="p-2 font-medium rounded-md hover:bg-accent"
-                        >
+                          legacyBehavior>
                           All {category.name}
                         </Link>
                       </DrawerClose>
@@ -92,7 +92,7 @@ export function CategoryDrawer({ categories }: { categories: Category[] }) {
                           <Link
                             href={`/collections/${category.slug}?subcategory=${sub.slug}`}
                             className="p-2 rounded-md hover:bg-accent"
-                          >
+                            legacyBehavior>
                             {sub.name}
                           </Link>
                         </DrawerClose>
@@ -106,7 +106,7 @@ export function CategoryDrawer({ categories }: { categories: Category[] }) {
                   <Link
                     href={`/collections/${category.slug}`}
                     className="flex w-full items-center py-4 font-semibold border-b"
-                  >
+                    legacyBehavior>
                     {category.name}
                   </Link>
                 </DrawerClose>

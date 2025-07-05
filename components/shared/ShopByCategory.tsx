@@ -26,7 +26,7 @@ const ShopByCategory = async () => {
               href={`/collections/${category.slug}`}
               key={category.id}
               className="group"
-            >
+              legacyBehavior>
               <div className="bg-white rounded-xl shadow-lg overflow-hidden transition-transform duration-300 group-hover:-translate-y-2">
                 {/* Image container */}
                 <div className="relative w-full aspect-[4/3]">

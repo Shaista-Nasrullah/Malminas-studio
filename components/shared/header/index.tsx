@@ -21,7 +21,6 @@ const Header = async () => {
   return (
     <header className="sticky top-0 z-50 w-full bg-white shadow-sm">
       <AnnouncementBanner />
-
       <div className="w-full mx-auto">
         {/* 
           HIGHLIGHT: Replaced `flex` with `grid` for perfect centering.
@@ -40,7 +39,10 @@ const Header = async () => {
           {/* --- Center Section: Logo --- */}
           {/* HIGHLIGHT: This column is centered. `flex-1` is removed. */}
           <div className="flex justify-center">
-            <Link href="/" aria-label="Malminas Traditional Boutique Homepage">
+            <Link
+              href="/"
+              aria-label="Malminas Traditional Boutique Homepage"
+              legacyBehavior>
               <Image
                 src="/images/logo-remvedBg.png"
                 alt="Malminas Traditional Boutique"

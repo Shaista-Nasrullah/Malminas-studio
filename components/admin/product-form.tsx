@@ -291,7 +291,6 @@ const ProductForm = ({
           />
 
           {/* --- NEW FIELD FOR DISCOUNT END DATE --- */}
-          {/* --- THE CORRECTED CODE --- */}
           <FormField
             control={form.control}
             name="discountEndDate"

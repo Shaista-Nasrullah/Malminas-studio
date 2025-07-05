@@ -34,7 +34,7 @@ const SignUpPage = async (props: {
     <div className="w-full max-w-md mx-auto">
       <Card>
         <CardHeader className="space-y-4">
-          <Link href="/" className="flex-center">
+          <Link href="/" className="flex-center" legacyBehavior>
             <Image
               src="/images/logo.png"
               width={100}

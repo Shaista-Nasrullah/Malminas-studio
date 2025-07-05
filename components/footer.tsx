@@ -22,7 +22,7 @@ const Footer = async () => {
     children: React.ReactNode;
   }) => (
     <li>
-      <Link href={href} className="hover:text-white transition-colors">
+      <Link href={href} className="hover:text-white transition-colors" legacyBehavior>
         {children}
       </Link>
     </li>
@@ -34,7 +34,7 @@ const Footer = async () => {
         <div className="grid grid-cols-1 gap-12 md:grid-cols-2 lg:grid-cols-4">
           {/* --- Column 1: Brand Story & Subscribe --- */}
           <div className="space-y-6">
-            <Link href="/">
+            <Link href="/" legacyBehavior>
               <Image
                 src="/images/logo-removebg-preview.png"
                 alt="Kuchi Jewels Logo"
@@ -54,19 +54,19 @@ const Footer = async () => {
             </p>
             {/* Using a mix of icons for better brand representation */}
             <div className="flex space-x-4">
-              <Link href="#" aria-label="Facebook">
+              <Link href="#" aria-label="Facebook" legacyBehavior>
                 <Facebook size={20} />
               </Link>
-              <Link href="#" aria-label="Instagram">
+              <Link href="#" aria-label="Instagram" legacyBehavior>
                 <Instagram size={20} />
               </Link>
-              <Link href="#" aria-label="YouTube">
+              <Link href="#" aria-label="YouTube" legacyBehavior>
                 <Youtube size={20} />
               </Link>
-              <Link href="#" aria-label="TikTok">
+              <Link href="#" aria-label="TikTok" legacyBehavior>
                 <FaTiktok size={20} />
               </Link>
-              <Link href="#" aria-label="Pinterest">
+              <Link href="#" aria-label="Pinterest" legacyBehavior>
                 <FaPinterest size={20} />
               </Link>
             </div>
