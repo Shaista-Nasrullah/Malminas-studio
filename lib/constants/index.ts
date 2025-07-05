@@ -43,8 +43,6 @@ export const PAGE_SIZE = Number(process.env.PAGE_SIZE) || 12;
 export const productDefaultValues = {
   name: "",
   slug: "",
-  // REMOVED: category: "",
-  // ADDED: categoryId and subCategoryId to match the validator
   categoryId: "", // +++ ADDED +++
   subCategoryId: "", // +++ ADDED +++
   images: [],
@@ -52,6 +50,7 @@ export const productDefaultValues = {
   description: "",
   price: "0",
   stock: 0,
+  discountPercentage: 0,
   isFeatured: false,
   banner: null,
 };

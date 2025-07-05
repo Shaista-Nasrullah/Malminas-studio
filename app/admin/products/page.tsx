@@ -45,7 +45,7 @@ const AdminProductsPage = async (props: {
             <TableHead className="text-right">PRICE</TableHead>
             <TableHead>CATEGORY</TableHead>
             <TableHead>STOCK</TableHead>
-            <TableHead>RATING</TableHead>
+            <TableHead>Discount %</TableHead>
             <TableHead className="w-[100px]">ACTIONS</TableHead>
           </TableRow>
         </TableHeader>
@@ -65,7 +65,7 @@ const AdminProductsPage = async (props: {
               */}
               <TableCell>{product?.category?.name}</TableCell>
               <TableCell>{product.stock}</TableCell>
-              <TableCell>{product.rating.toString()}</TableCell>
+              <TableCell>{product.discountPercentage}</TableCell>
 
               <TableCell className="flex gap-1">
                 <Button asChild variant="outline" size="sm">
