@@ -5,12 +5,8 @@ import { Button } from "./ui/button";
 import Image from "next/image";
 import { useEffect, useState } from "react";
 
-// Static target date (replace with desired date)
-const TARGET_DATE = new Date("2025-07-20T00:00:00");
-
-// Function to calculate the time remaining
+// This is a pure utility function to calculate time difference. It remains the same.
 const calculateTimeRemaining = (targetDate: Date) => {
-  // ... (this function remains the same)
   const currentTime = new Date();
   const timeDifference = Math.max(Number(targetDate) - Number(currentTime), 0);
   return {
@@ -23,15 +19,42 @@ const calculateTimeRemaining = (targetDate: Date) => {
   };
 };
 
-// --- 1. ACCEPT THE NEW PROP ---
-const DealCountdown = ({ dealProductSlug }: { dealProductSlug?: string }) => {
+// A small, reusable component for each stat box in the countdown.
+const StatBox = ({ label, value }: { label: string; value: number }) => (
+  <li className="p-4 w-full text-center">
+    <p className="text-3xl font-bold">{value}</p>
+    <p>{label}</p>
+  </li>
+);
+
+// The main, fully dynamic DealCountdown component.
+const DealCountdown = ({
+  dealProductSlug,
+  dealEndDate,
+}: {
+  dealProductSlug?: string;
+  dealEndDate?: Date | null; // Accepts a Date, null, or undefined.
+}) => {
   const [time, setTime] = useState<ReturnType<typeof calculateTimeRemaining>>();
 
   useEffect(() => {
-    setTime(calculateTimeRemaining(TARGET_DATE));
+    // 1. If no end date is provided from the server, we don't start the timer.
+    if (!dealEndDate) {
+      return;
+    }
+
+    // 2. The target date is now the dynamic prop from the database.
+    const target = new Date(dealEndDate);
+
+    // 3. Set the initial time immediately when the component mounts.
+    setTime(calculateTimeRemaining(target));
+
+    // 4. Start an interval to update the time every second.
     const timerInterval = setInterval(() => {
-      const newTime = calculateTimeRemaining(TARGET_DATE);
+      const newTime = calculateTimeRemaining(target);
       setTime(newTime);
+
+      // Stop the timer when it reaches zero to save resources.
       if (
         newTime.days === 0 &&
         newTime.hours === 0 &&
@@ -40,28 +63,29 @@ const DealCountdown = ({ dealProductSlug }: { dealProductSlug?: string }) => {
       ) {
         clearInterval(timerInterval);
       }
-      return () => clearInterval(timerInterval);
     }, 1000);
-  }, []);
 
-  // --- 2. CREATE THE DYNAMIC LINK ---
-  // If a deal product slug is provided, link to it. Otherwise, fall back to the general search page.
+    // 5. Cleanup function: This is crucial. It clears the interval if the component is unmounted.
+    return () => clearInterval(timerInterval);
+  }, [dealEndDate]); // The effect re-runs only if the dealEndDate prop changes.
+
+  // If there is no active deal from the server, or if the timer hasn't initialized, render nothing.
+  if (!dealEndDate || !time) {
+    return null;
+  }
+
+  // Determine the correct link for the button.
   const buttonLink = dealProductSlug
     ? `/product/${dealProductSlug}`
     : "/search";
 
-  if (!time) {
-    // ... (Loading state remains the same)
-    return null;
-  }
-
+  // If the countdown has finished, show the "Deal Has Ended" message.
   if (
     time.days === 0 &&
     time.hours === 0 &&
     time.minutes === 0 &&
     time.seconds === 0
   ) {
-    // ... (Deal Ended state remains the same)
     return (
       <section className="wrapper grid grid-cols-1 md:grid-cols-2 my-20">
         <div className="flex flex-col gap-2 justify-center">
@@ -88,6 +112,7 @@ const DealCountdown = ({ dealProductSlug }: { dealProductSlug?: string }) => {
     );
   }
 
+  // If the countdown is active, display the banner.
   return (
     <section className="wrapper grid grid-cols-1 md:grid-cols-2 my-20">
       <div className="flex flex-col gap-2 justify-center">
@@ -105,7 +130,6 @@ const DealCountdown = ({ dealProductSlug }: { dealProductSlug?: string }) => {
           <StatBox label="Seconds" value={time.seconds} />
         </ul>
         <div className="text-center">
-          {/* --- 3. USE THE DYNAMIC LINK HERE --- */}
           <Button asChild>
             <Link href={buttonLink}>View The Deal</Link>
           </Button>
@@ -117,14 +141,6 @@ const DealCountdown = ({ dealProductSlug }: { dealProductSlug?: string }) => {
     </section>
   );
 };
-
-const StatBox = ({ label, value }: { label: string; value: number }) => (
-  // ... (This component remains the same)
-  <li className="p-4 w-full text-center">
-    <p className="text-3xl font-bold">{value}</p>
-    <p>{label}</p>
-  </li>
-);
 
 export default DealCountdown;
 

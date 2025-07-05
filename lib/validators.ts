@@ -64,6 +64,7 @@ export const insertProductSchema = z.object({
     .min(0, "Discount cannot be negative")
     .max(100, "Discount cannot be more than 100%")
     .optional(),
+  discountEndDate: z.string().optional().nullable(),
 });
 
 // Schema for updating products

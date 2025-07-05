@@ -155,8 +155,23 @@ export async function deleteProduct(id: string) {
 
 export async function createProduct(data: z.infer<typeof insertProductSchema>) {
   try {
-    const product = insertProductSchema.parse(data);
-    await prisma.product.create({ data: product });
+    // 1. Validate the incoming data from the form
+    const parsedData = insertProductSchema.parse(data);
+
+    // 2. Separate the discountEndDate from the rest of the data
+    const { discountEndDate, ...restOfData } = parsedData;
+
+    // 3. Create the final data object for Prisma, converting the date string
+    const dataForPrisma = {
+      ...restOfData,
+      // If discountEndDate is a non-empty string, convert it to a Date object.
+      // Otherwise, set it to null in the database.
+      discountEndDate: discountEndDate ? new Date(discountEndDate) : null,
+    };
+
+    // 4. Use the correctly formatted data to create the product
+    await prisma.product.create({ data: dataForPrisma });
+
     revalidatePath("/admin/products");
     return { success: true, message: "Product created successfully" };
   } catch (error) {
@@ -166,16 +181,58 @@ export async function createProduct(data: z.infer<typeof insertProductSchema>) {
 
 export async function updateProduct(data: z.infer<typeof updateProductSchema>) {
   try {
-    const product = updateProductSchema.parse(data);
-    const { id, ...rest } = product;
-    await prisma.product.update({ where: { id }, data: rest });
+    // 1. Validate the incoming data
+    const parsedData = updateProductSchema.parse(data);
+
+    // 2. Destructure the ID and the rest of the product data
+    const { id, ...productFieldsToUpdate } = parsedData;
+
+    // 3. From the fields to update, separate the discountEndDate
+    const { discountEndDate, ...restOfData } = productFieldsToUpdate;
+
+    // 4. Create the final data object for Prisma, converting the date string
+    const dataForPrisma = {
+      ...restOfData,
+      discountEndDate: discountEndDate ? new Date(discountEndDate) : null,
+    };
+
+    // 5. Use the correctly formatted data to update the product
+    await prisma.product.update({
+      where: { id },
+      data: dataForPrisma,
+    });
+
     revalidatePath("/admin/products");
-    revalidatePath(`/admin/products/${id}/edit`);
+    revalidatePath(`/admin/products/${id}/edit`); // Keep this specific revalidation
     return { success: true, message: "Product updated successfully" };
   } catch (error) {
     return { success: false, message: formatError(error) };
   }
 }
+
+// export async function createProduct(data: z.infer<typeof insertProductSchema>) {
+//   try {
+//     const product = insertProductSchema.parse(data);
+//     await prisma.product.create({ data: product });
+//     revalidatePath("/admin/products");
+//     return { success: true, message: "Product created successfully" };
+//   } catch (error) {
+//     return { success: false, message: formatError(error) };
+//   }
+// }
+
+// export async function updateProduct(data: z.infer<typeof updateProductSchema>) {
+//   try {
+//     const product = updateProductSchema.parse(data);
+//     const { id, ...rest } = product;
+//     await prisma.product.update({ where: { id }, data: rest });
+//     revalidatePath("/admin/products");
+//     revalidatePath(`/admin/products/${id}/edit`);
+//     return { success: true, message: "Product updated successfully" };
+//   } catch (error) {
+//     return { success: false, message: formatError(error) };
+//   }
+// }
 
 // No changes needed for featured products.
 export async function getFeaturedProducts() {
@@ -190,16 +247,21 @@ export async function getFeaturedProducts() {
 // --- ADD THIS NEW FUNCTION ---
 export async function getDealOfTheMonthProduct() {
   try {
-    // Find the first product that is featured AND has a discount
     const product = await prisma.product.findFirst({
       where: {
+        isFeatured: true,
         discountPercentage: {
-          gt: 0, // 'gt' means "greater than" 0
+          gt: 0,
+        },
+        // ADDED: Only find deals that have an end date set in the future
+        discountEndDate: {
+          gte: new Date(), // 'gte' means "greater than or equal to" now
         },
       },
-      // We only need the slug for the URL, so this is very efficient
+      // MODIFIED: Select both the slug and the end date
       select: {
         slug: true,
+        discountEndDate: true,
       },
     });
 

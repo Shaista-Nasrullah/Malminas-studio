@@ -290,6 +290,27 @@ const ProductForm = ({
             )}
           />
 
+          {/* --- NEW FIELD FOR DISCOUNT END DATE --- */}
+          {/* --- THE CORRECTED CODE --- */}
+          <FormField
+            control={form.control}
+            name="discountEndDate"
+            render={({ field }) => (
+              <FormItem className="w-full">
+                <FormLabel>Discount End Date (Optional)</FormLabel>
+                <FormControl>
+                  <Input
+                    type="datetime-local"
+                    {...field}
+                    // This line is the fix. It ensures value is never null.
+                    value={field.value ?? ""}
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
           <FormField
             control={form.control}
             name="stock"

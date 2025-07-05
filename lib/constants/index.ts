@@ -51,6 +51,7 @@ export const productDefaultValues = {
   price: "0",
   stock: 0,
   discountPercentage: 0,
+  discountEndDate: "",
   isFeatured: false,
   banner: null,
 };
