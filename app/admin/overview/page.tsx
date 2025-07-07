@@ -122,7 +122,7 @@ const AdminOverviewPage = async () => {
                       {formatCurrency(order.totalPrice.toString())}
                     </TableCell>
                     <TableCell>
-                      <Link href={`/order/${order.id}`} legacyBehavior>
+                      <Link href={`/order/${order.id}`}>
                         <span className="px-2">Details</span>
                       </Link>
                     </TableCell>

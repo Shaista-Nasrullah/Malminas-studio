@@ -14,15 +14,16 @@ import {
   navigationMenuTriggerStyle,
 } from "@/components/ui/navigation-menu";
 
-// Helper component MUST be defined at the top level of the module, outside the main component.
+// --- FIX #1: Update ListItem to use <Link> instead of <a> ---
 const ListItem = React.forwardRef<
-  React.ElementRef<"a">,
-  React.ComponentPropsWithoutRef<"a">
+  React.ElementRef<typeof Link>, // Changed from "a" to typeof Link
+  React.ComponentPropsWithoutRef<typeof Link> // Changed from "a" to typeof Link
 >(({ className, title, children, ...props }, ref) => {
   return (
     <li>
       <NavigationMenuLink asChild>
-        <a
+        {/* Replaced the <a> tag with a Next.js <Link> component */}
+        <Link
           ref={ref}
           className={cn(
             "block select-none space-y-1 rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground",
@@ -34,33 +35,29 @@ const ListItem = React.forwardRef<
           <p className="line-clamp-2 text-sm leading-snug text-muted-foreground">
             {children}
           </p>
-        </a>
+        </Link>
       </NavigationMenuLink>
     </li>
   );
 });
 ListItem.displayName = "ListItem";
 
-// ... (imports and ListItem component remain the same)
-
 export function DesktopNav({ categories }: { categories: Category[] }) {
   const staticLinks = [{ href: "/", title: "Home" }];
 
   return (
-    // HIGHLIGHT: THIS IS THE FIX.
-    // We make the container 'relative' so 'z-index' works, and give it the highest z-index.
     <div className="flex flex-wrap">
-      {/* The NavigationMenu no longer needs its own z-index, as its parent now controls it. */}
       <NavigationMenu>
         <NavigationMenuList>
-          {/* ... The rest of your component logic remains exactly the same ... */}
+          {/* --- FIX #2: Update static links --- */}
           {staticLinks.map((link) => (
             <NavigationMenuItem key={link.href}>
-              <Link href={link.href} legacyBehavior passHref>
-                <NavigationMenuLink className={navigationMenuTriggerStyle()}>
+              {/* Use the 'asChild' pattern */}
+              <NavigationMenuLink asChild>
+                <Link href={link.href} className={navigationMenuTriggerStyle()}>
                   {link.title}
-                </NavigationMenuLink>
-              </Link>
+                </Link>
+              </NavigationMenuLink>
             </NavigationMenuItem>
           ))}
 
@@ -69,6 +66,7 @@ export function DesktopNav({ categories }: { categories: Category[] }) {
               <NavigationMenuItem key={category.id}>
                 <NavigationMenuTrigger>{category.name}</NavigationMenuTrigger>
                 <NavigationMenuContent>
+                  {/* This part now works correctly because ListItem was fixed above */}
                   <ul className="grid w-[400px] gap-3 p-4 md:w-[500px] md:grid-cols-2 lg:w-[1200px] align-start">
                     <ListItem
                       key={category.id}
@@ -89,16 +87,17 @@ export function DesktopNav({ categories }: { categories: Category[] }) {
                 </NavigationMenuContent>
               </NavigationMenuItem>
             ) : (
+              // --- FIX #3: Update simple category links ---
               <NavigationMenuItem key={category.id}>
-                <Link
-                  href={`/collections/${category.slug}`}
-                  legacyBehavior
-                  passHref
-                >
-                  <NavigationMenuLink className={navigationMenuTriggerStyle()}>
+                {/* Use the 'asChild' pattern here as well */}
+                <NavigationMenuLink asChild>
+                  <Link
+                    href={`/collections/${category.slug}`}
+                    className={navigationMenuTriggerStyle()}
+                  >
                     {category.name}
-                  </NavigationMenuLink>
-                </Link>
+                  </Link>
+                </NavigationMenuLink>
               </NavigationMenuItem>
             )
           )}

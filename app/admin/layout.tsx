@@ -16,7 +16,7 @@ export default function AdminLayout({
       <div className="flex flex-col">
         <div className="border-b container mx-auto">
           <div className="flex items-center h-25 px-4">
-            <Link href="/" className="w-32" legacyBehavior>
+            <Link href="/" className="w-32">
               <Image
                 src="/images/logo-remvedBg.png"
                 height={88}

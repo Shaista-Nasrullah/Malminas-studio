@@ -30,7 +30,7 @@ const ProductCard = ({ product }: { product: Product }) => {
           </div>
         ) : null}
 
-        <Link href={`/product/${product.slug}`} legacyBehavior>
+        <Link href={`/product/${product.slug}`}>
           <Image
             src={product.images[0]}
             alt={product.name}
@@ -41,7 +41,7 @@ const ProductCard = ({ product }: { product: Product }) => {
         </Link>
       </CardHeader>
       <CardContent className="p-4 grid gap-4">
-        <Link href={`/product/${product.slug}`} legacyBehavior>
+        <Link href={`/product/${product.slug}`}>
           <h2 className="text-sm font-medium">{product.name}</h2>
         </Link>
         <div className="flex-between gap-2">
@@ -51,16 +51,16 @@ const ProductCard = ({ product }: { product: Product }) => {
           {product.stock > 0 ? (
             hasDiscount ? (
               // If there IS a discount, show both prices
-              (<div className="flex items-baseline gap-2">
+              <div className="flex items-baseline gap-2">
                 <p className="text-gray-500 line-through text-sm">
                   Rs.{originalPrice.toFixed(0)}
                 </p>
                 {/* Use your existing ProductPrice component for the final price */}
                 <ProductPrice value={salePrice} />
-              </div>)
+              </div>
             ) : (
               // If NO discount, show the original price as before
-              (<ProductPrice value={originalPrice} />)
+              <ProductPrice value={originalPrice} />
             )
           ) : (
             <p className="text-destructive">Out Of Stock</p>
@@ -72,44 +72,3 @@ const ProductCard = ({ product }: { product: Product }) => {
 };
 
 export default ProductCard;
-
-// import { Card, CardContent, CardHeader } from "@/components/ui/card";
-// import Image from "next/image";
-// import Link from "next/link";
-// import ProductPrice from "./product-price";
-// import { Product } from "@/types";
-// import Rating from "./rating";
-
-// const ProductCard = ({ product }: { product: Product }) => {
-//   return (
-//     <Card className="w-full max-w-sm">
-//       <CardHeader className="px-5 items-center">
-//         <Link href={`/product/${product.slug}`}>
-//           <Image
-//             src={product.images[0]}
-//             alt={product.name}
-//             height={350}
-//             width={380}
-//             priority={true}
-//           />
-//         </Link>
-//       </CardHeader>
-//       <CardContent className="p-4 grid gap-4">
-//         {/* <div className="text-xs">{product.brand}</div> */}
-//         <Link href={`/product/${product.slug}`}>
-//           <h2 className="text-sm font-medium">{product.name}</h2>
-//         </Link>
-//         <div className="flex-between gap-">
-//           <Rating value={Number(product.rating)} />
-//           {product.stock > 0 ? (
-//             <ProductPrice value={Number(product.price)} />
-//           ) : (
-//             <p className="text-destructive">Out Of Stock</p>
-//           )}
-//         </div>
-//       </CardContent>
-//     </Card>
-//   );
-// };
-
-// export default ProductCard;
