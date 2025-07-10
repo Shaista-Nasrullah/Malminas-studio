@@ -61,8 +61,8 @@ const OrdersPage = async (props: {
                     : "Not Delivered"}
                 </TableCell>
                 <TableCell>
-                  <Link href={`/order/${order.id}`} legacyBehavior>
-                    <span className="px-2">Details</span>
+                  <Link href={`/order/${order.id}`}>
+                    <span className="px-2 cursor-pointer">Details</span>
                   </Link>
                 </TableCell>
               </TableRow>

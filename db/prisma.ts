@@ -96,11 +96,14 @@ export const prisma = new PrismaClient({ adapter }).$extends({
           return order.createdAt.toISOString();
         },
       },
+      // --- THIS IS THE FIX ---
       updatedAt: {
         compute(order) {
-          return order.updatedAt.toISOString();
+          // If updatedAt exists, convert it. Otherwise, return null.
+          return order.updatedAt ? order.updatedAt.toISOString() : null;
         },
       },
+      // --- END OF FIX ---
     },
     orderItem: {
       price: {

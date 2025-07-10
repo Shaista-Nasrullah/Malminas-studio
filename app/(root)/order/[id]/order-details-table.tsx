@@ -150,17 +150,18 @@ const OrderDetailsTable = ({
                   {orderitems.map((item) => (
                     <TableRow key={item.slug}>
                       <TableCell>
-                        <Link
-                          href={`/product/${item.slug}`}
-                          className="flex items-center"
-                          legacyBehavior>
-                          <Image
-                            src={item.image}
-                            alt={item.name}
-                            width={50}
-                            height={50}
-                          />
-                          <span className="px-2">{item.name}</span>
+                        <Link href={`/product/${item.slug}`}>
+                          <div className="flex items-center gap-4">
+                            {" "}
+                            {/* Wrap children in a single div */}
+                            <Image
+                              src={item.image}
+                              alt={item.name}
+                              width={50}
+                              height={50}
+                            />
+                            <span>{item.name}</span>
+                          </div>
                         </Link>
                       </TableCell>
                       <TableCell>

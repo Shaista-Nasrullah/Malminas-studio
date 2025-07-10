@@ -14,7 +14,7 @@ export default function UserLayout({
       <div className="flex flex-col">
         <div className="wrapper border-b container mx-auto">
           <div className="flex items-center h-15 px-4">
-            <Link href="/" className="w-22" legacyBehavior>
+            <Link href="/" className="w-22">
               <Image
                 src="/images/logo.png"
                 height={98}

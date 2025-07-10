@@ -21,7 +21,7 @@ const UserButton = async () => {
       //     <UserIcon className="h-5 w-5" /> Sign In
       //   </Link>
       // </Button>
-      <Link href="/sign-in" legacyBehavior>
+      <Link href="/sign-in">
         <CiUser size={26} />
       </Link>
     );
