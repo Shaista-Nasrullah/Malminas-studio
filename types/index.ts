@@ -11,6 +11,7 @@ import {
   insertReviewSchema,
   insertCategorySchema,
   insertSubCategorySchema,
+  CmsPageSchema,
 } from "@/lib/validators";
 
 // +++ ADDED: A new type for the combined Category/Sub-Category form data +++
@@ -61,4 +62,10 @@ export type Review = z.infer<typeof insertReviewSchema> & {
   id: string;
   createdAt: Date;
   user?: { name: string };
+};
+
+export type CmsPage = z.infer<typeof CmsPageSchema> & {
+  id: string;
+  slug: string;
+  createdAt: Date;
 };

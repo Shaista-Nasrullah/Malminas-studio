@@ -26,7 +26,7 @@ import {
   createCategoryWithSubCategories,
   updateCategoryWithSubCategories,
 } from "@/lib/actions/category.actions";
-import { Trash } from "lucide-react";
+import { Trash, X } from "lucide-react"; // <-- IMPORT X ICON
 
 const CategoryForm = ({
   type,
@@ -48,6 +48,14 @@ const CategoryForm = ({
     control: form.control,
     name: "subCategories",
   });
+
+  // NEW: Handler to delete an image from the form state
+  const handleImageDelete = (imageUrl: string) => {
+    const currentImages = form.getValues("images") || [];
+    const updatedImages = currentImages.filter((img) => img !== imageUrl);
+    form.setValue("images", updatedImages);
+    toast.info("Image removed. Save the category to apply changes.");
+  };
 
   const onSubmit: SubmitHandler<z.infer<typeof categoryFormSchema>> = async (
     values
@@ -134,46 +142,63 @@ const CategoryForm = ({
                 )}
               />
             </div>
+
+            {/* --- UPDATED IMAGES FIELD --- */}
             <FormField
               control={form.control}
               name="images"
               render={() => (
                 <FormItem className="w-full">
                   <FormLabel>Images</FormLabel>
-                  <div className="flex flex-wrap items-center gap-4 p-4 border rounded-md min-h-[96px]">
+                  <div className="flex flex-wrap items-start gap-4">
                     {images?.map((image) => (
-                      <Image
-                        key={image}
-                        src={image}
-                        alt="category image"
-                        width={96}
-                        height={96}
-                        className="w-24 h-24 object-cover rounded-md"
-                      />
+                      <div key={image} className="relative group">
+                        <Image
+                          src={image}
+                          alt="category image"
+                          width={96}
+                          height={96}
+                          className="w-24 h-24 object-cover rounded-md"
+                        />
+                        <Button
+                          type="button"
+                          variant="destructive"
+                          size="icon"
+                          className="absolute top-1 right-1 h-5 w-5 opacity-0 group-hover:opacity-100 transition-opacity"
+                          onClick={() => handleImageDelete(image)}
+                        >
+                          <X className="h-4 w-4" />
+                        </Button>
+                      </div>
                     ))}
                     <FormControl>
-                      <UploadButton
-                        endpoint="imageUploader"
-                        onClientUploadComplete={(res) => {
-                          if (res) {
-                            form.setValue("images", [
-                              ...(images || []),
-                              res[0].url,
-                            ]);
-                            toast.success("Image uploaded.");
-                          }
-                        }}
-                        onUploadError={(error) => toast.error(error.message)}
-                      />
+                      <div className="w-24 h-24 flex items-center justify-center border-2 border-dashed rounded-md">
+                        <UploadButton
+                          endpoint="imageUploader"
+                          onClientUploadComplete={(res) => {
+                            if (res) {
+                              const newUrls = res.map((r) => r.url);
+                              form.setValue("images", [
+                                ...(images || []),
+                                ...newUrls,
+                              ]);
+                              toast.success("Image(s) uploaded.");
+                            }
+                          }}
+                          onUploadError={(error) => toast.error(error.message)}
+                        />
+                      </div>
                     </FormControl>
                   </div>
                   <FormMessage />
                 </FormItem>
               )}
             />
+            {/* --- END OF UPDATED IMAGES FIELD --- */}
           </CardContent>
         </Card>
 
+        {/* ... (Sub-Categories and Submit button remain the same) ... */}
         <Card>
           <CardHeader className="flex-row items-center justify-between">
             <CardTitle>Sub-Categories</CardTitle>

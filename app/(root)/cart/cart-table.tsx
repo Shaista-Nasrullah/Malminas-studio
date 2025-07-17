@@ -26,7 +26,7 @@ const CartTable = ({ cart }: { cart?: Cart }) => {
     <>
       <h1 className="wrapper py-4 h2-bold">Shopping Cart</h1>
       {!cart || cart.items.length === 0 ? (
-        <div>
+        <div className="wrapper py-4">
           Cart is empty. <Link href="/">Go Shopping</Link>
         </div>
       ) : (
@@ -120,9 +120,7 @@ const CartTable = ({ cart }: { cart?: Cart }) => {
               <Button
                 className="w-full"
                 disabled={isPending}
-                onClick={() =>
-                  startTransition(() => router.push("/shipping-address"))
-                }
+                onClick={() => startTransition(() => router.push("/checkout"))}
               >
                 {isPending ? (
                   <Loader className="w-4 h-4 animate-spin" />

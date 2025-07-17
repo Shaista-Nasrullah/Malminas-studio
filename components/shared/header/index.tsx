@@ -8,9 +8,10 @@ import { getMyCart } from "@/lib/actions/cart.actions";
 // Responsive Navigation Components
 import { DesktopNav } from "./DesktopNav";
 import { CategoryDrawer } from "./category-drawer";
-import AnnouncementBanner from "./top-header";
+// import AnnouncementBanner from "./top-header";
 import Menu from "./menu";
 import Search from "./search";
+import { TopHeader } from "./top-header";
 
 const Header = async () => {
   const categories = await getCategoriesForNavigation();
@@ -19,7 +20,7 @@ const Header = async () => {
 
   return (
     <header className="sticky top-0 z-50 w-full bg-white shadow-sm">
-      <AnnouncementBanner />
+      <TopHeader />
       <div className="w-full mx-auto">
         <div className="wrapper grid grid-cols-3 h-36 items-center">
           {/* --- Left Section --- */}

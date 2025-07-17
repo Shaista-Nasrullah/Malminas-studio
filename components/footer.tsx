@@ -96,14 +96,20 @@ const Footer = async () => {
             <ul className="space-y-3">
               <FooterLink href="/search">Search</FooterLink>
               {/* HIGHLIGHT: Changed "About Us" to "Our Story" to better fit the brand narrative */}
-              <FooterLink href="/about">Our Story</FooterLink>
-              <FooterLink href="/policies/shipping">Shipping Policy</FooterLink>
-              <FooterLink href="/policies/terms">Terms & Conditions</FooterLink>
-              <FooterLink href="/policies/refund">
+              <FooterLink href="/pages/about-us">About Us</FooterLink>
+              <FooterLink href="/pages/shipping-policy">
+                Shipping Policy
+              </FooterLink>
+              <FooterLink href="/pages/terms-and-conditions">
+                Terms & Conditions
+              </FooterLink>
+              <FooterLink href="/pages/refund-and-return-policy">
                 Refund and Return Policy
               </FooterLink>
-              <FooterLink href="/policies/privacy">Privacy Policy</FooterLink>
-              <FooterLink href="/faq">FAQs</FooterLink>
+              <FooterLink href="/pages/privacy-policy">
+                Privacy Policy
+              </FooterLink>
+              <FooterLink href="/pages/faqs">FAQs</FooterLink>
             </ul>
           </div>
 
@@ -147,17 +153,20 @@ const Footer = async () => {
             reserved.
           </p>
           <div className="flex flex-wrap justify-center gap-x-4 gap-y-2">
-            <Link href="/policies/refund" className="hover:text-white">
+            <Link href="/pages/refund-policy" className="hover:text-white">
               Refund policy
             </Link>
-            <Link href="/policies/privacy" className="hover:text-white">
+            <Link href="/pages/privacy-policy" className="hover:text-white">
               Privacy policy
             </Link>
-            <Link href="/policies/terms" className="hover:text-white">
+            <Link href="/pages/terms-of-service" className="hover:text-white">
               Terms of service
             </Link>
-            <Link href="/policies/shipping" className="hover:text-white">
-              Shipping policy
+            <Link
+              href="/pages/contact-information"
+              className="hover:text-white"
+            >
+              Contact Information
             </Link>
           </div>
         </div>

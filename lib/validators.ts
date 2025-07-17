@@ -189,3 +189,10 @@ export const insertReviewSchema = z.object({
     .min(1, "Rating must be at least 1")
     .max(5, "Rating must be at most 5"),
 });
+
+// Schema for inserting or updating a CMS Page
+export const CmsPageSchema = z.object({
+  title: z.string().min(3, "Title must be at least 3 characters long."),
+  // The 'slug' can be handled separately, so it's not needed in the form validation
+  content: z.string().min(20, "Content must be at least 20 characters long."),
+});

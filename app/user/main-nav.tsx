@@ -33,7 +33,7 @@ const MainNav = ({
             "text-sm font-medium transition-colors hover:text-primary",
             pathname.includes(item.href) ? "" : "text-muted-foreground"
           )}
-          legacyBehavior>
+        >
           {item.title}
         </Link>
       ))}

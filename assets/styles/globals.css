@@ -31,6 +31,12 @@
   .h3-bold {
     @apply font-bold text-xl lg:text-2xl;
   }
+  /* --- THIS IS THE ADDED CODE --- */
+  /* Ensures paragraphs rendered from the editor have vertical spacing */
+  .prose p {
+    @apply my-4; /* my-4 applies margin-top and margin-bottom */
+  }
+  /* ------------------------------ */
 }
 
 @layer base {
