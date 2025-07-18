@@ -35,9 +35,18 @@ import Image from "next/image";
 import { Checkbox } from "../ui/checkbox";
 import { UploadButton } from "@/lib/uploadthing";
 import { X } from "lucide-react"; // <-- IMPORT THE ICON
+// import  formatDateForInput  from "@/lib/utils";
 
 // Actions
 import { createProduct, updateProduct } from "@/lib/actions/prodct.actions";
+
+// PASTE THE HELPER FUNCTION HERE or import it
+const formatDateForInput = (date: Date | null | undefined): string => {
+  if (!date) return "";
+  const d = new Date(date);
+  d.setMinutes(d.getMinutes() - d.getTimezoneOffset());
+  return d.toISOString().slice(0, 16);
+};
 
 const ProductForm = ({
   type,
@@ -55,12 +64,15 @@ const ProductForm = ({
 
   const form = useForm<z.infer<typeof insertProductSchema>>({
     resolver: zodResolver(insertProductSchema),
+    // --- THIS IS THE CRITICAL FIX ---
     defaultValues:
       product && type === "Update"
         ? {
             ...product,
             price: String(product.price),
             discountPercentage: product.discountPercentage || 0,
+            // Use the helper to format the date correctly for the input
+            discountEndDate: formatDateForInput(product.discountEndDate),
           }
         : productDefaultValues,
   });
@@ -299,8 +311,10 @@ const ProductForm = ({
                 <FormControl>
                   <Input
                     type="datetime-local"
+                    // The rest of the props from 'field' are passed correctly
                     {...field}
-                    value={field.value ?? ""}
+                    // We remove the explicit 'value' prop here as react-hook-form
+                    // now provides the correctly formatted string from defaultValues
                   />
                 </FormControl>
                 <FormMessage />

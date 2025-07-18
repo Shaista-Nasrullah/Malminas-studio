@@ -15,7 +15,9 @@ const ProductList = ({
     <div className="mx-5 my-10">
       <h2 className="h2-bold mb-4">{title}</h2>
       {data.length > 0 ? (
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+        // --- THIS IS THE CORRECTED LINE ---
+        // Default to 2 columns, then switch to 4 columns on large screens.
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
           {limitedData.map((product: Product) => (
             <ProductCard key={product.slug} product={product} />
           ))}

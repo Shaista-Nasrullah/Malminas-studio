@@ -1,11 +1,8 @@
 "use client";
 
-import Link from "next/link";
-import { Button } from "./ui/button";
-import Image from "next/image";
 import { useEffect, useState } from "react";
 
-// This is a pure utility function to calculate time difference. It remains the same.
+// The core logic to calculate the time remains the same. It's perfect.
 const calculateTimeRemaining = (targetDate: Date) => {
   const currentTime = new Date();
   const timeDifference = Math.max(Number(targetDate) - Number(currentTime), 0);
@@ -19,42 +16,36 @@ const calculateTimeRemaining = (targetDate: Date) => {
   };
 };
 
-// A small, reusable component for each stat box in the countdown.
-const StatBox = ({ label, value }: { label: string; value: number }) => (
-  <li className="p-4 w-full text-center">
-    <p className="text-3xl font-bold">{value}</p>
-    <p>{label}</p>
-  </li>
-);
+// --- NEW: A small, focused component for each time unit (Days, Hours, etc.) ---
+const TimeBlock = ({ value, label }: { value: number; label: string }) => {
+  // We use padStart to ensure the number is always two digits (e.g., 07, 12)
+  const formattedValue = String(value).padStart(2, "0");
 
-// The main, fully dynamic DealCountdown component.
-const DealCountdown = ({
-  dealProductSlug,
-  dealEndDate,
-}: {
-  dealProductSlug?: string;
-  dealEndDate?: Date | null; // Accepts a Date, null, or undefined.
-}) => {
+  return (
+    <div className="flex flex-col items-center">
+      <span className="text-6xl md:text-7xl font-black text-yellow-400">
+        {formattedValue}
+      </span>
+      <span className="mt-1 text-sm font-semibold uppercase tracking-widest text-white/80">
+        {label}
+      </span>
+    </div>
+  );
+};
+
+// --- The main component, now redesigned ---
+const DealCountdown = ({ dealEndDate }: { dealEndDate?: Date | null }) => {
   const [time, setTime] = useState<ReturnType<typeof calculateTimeRemaining>>();
 
+  // The useEffect hook for the timer logic remains unchanged.
   useEffect(() => {
-    // 1. If no end date is provided from the server, we don't start the timer.
-    if (!dealEndDate) {
-      return;
-    }
-
-    // 2. The target date is now the dynamic prop from the database.
+    if (!dealEndDate) return;
     const target = new Date(dealEndDate);
-
-    // 3. Set the initial time immediately when the component mounts.
     setTime(calculateTimeRemaining(target));
 
-    // 4. Start an interval to update the time every second.
     const timerInterval = setInterval(() => {
       const newTime = calculateTimeRemaining(target);
       setTime(newTime);
-
-      // Stop the timer when it reaches zero to save resources.
       if (
         newTime.days === 0 &&
         newTime.hours === 0 &&
@@ -65,81 +56,35 @@ const DealCountdown = ({
       }
     }, 1000);
 
-    // 5. Cleanup function: This is crucial. It clears the interval if the component is unmounted.
     return () => clearInterval(timerInterval);
-  }, [dealEndDate]); // The effect re-runs only if the dealEndDate prop changes.
+  }, [dealEndDate]);
 
-  // If there is no active deal from the server, or if the timer hasn't initialized, render nothing.
+  // If there's no date or the timer hasn't started, render nothing.
   if (!dealEndDate || !time) {
     return null;
   }
 
-  // Determine the correct link for the button.
-  const buttonLink = dealProductSlug
-    ? `/product/${dealProductSlug}`
-    : "/search";
-
-  // If the countdown has finished, show the "Deal Has Ended" message.
-  if (
-    time.days === 0 &&
-    time.hours === 0 &&
-    time.minutes === 0 &&
-    time.seconds === 0
-  ) {
-    return (
-      <section className="wrapper grid grid-cols-1 md:grid-cols-2 my-20">
-        <div className="flex flex-col gap-2 justify-center">
-          <h3 className="text-3xl font-bold">Deal Has Ended</h3>
-          <p>
-            This deal is no longer available. Check out our latest promotions!
-          </p>
-
-          <div className="text-center">
-            <Button asChild>
-              <Link href="/search">View Products</Link>
-            </Button>
-          </div>
-        </div>
-        <div className="flex justify-center">
-          <Image
-            src="/images/m6.png"
-            alt="promotion"
-            width={300}
-            height={200}
-          />
-        </div>
-      </section>
-    );
-  }
-
-  // If the countdown is active, display the banner.
+  // --- START: The new visual implementation ---
   return (
-    <section className="wrapper grid grid-cols-1 md:grid-cols-2 my-20">
-      <div className="flex flex-col gap-2 justify-center">
-        <h3 className="text-3xl font-bold">Deal Of The Month</h3>
-        <p>
-          Gett ready for a shopping experience like never before with our Deals
-          of the Month! Every purchase comes with exclusive perks and offers,
-          making this month a celebration of savvy choices and amazing deals.
-          Don&apos;t miss out! 🎁🛒
-        </p>
-        <ul className="grid grid-cols-4">
-          <StatBox label="Days" value={time.days} />
-          <StatBox label="Hours" value={time.hours} />
-          <StatBox label="Minutes" value={time.minutes} />
-          <StatBox label="Seconds" value={time.seconds} />
-        </ul>
-        <div className="text-center">
-          <Button asChild>
-            <Link href={buttonLink}>View The Deal</Link>
-          </Button>
-        </div>
+    <div className="bg-gray-900 text-white p-6 md:p-8 rounded-2xl flex flex-col items-center gap-4 w-full max-w-2xl mx-auto">
+      <h2 className="text-4xl md:text-5xl font-extrabold tracking-wide">
+        Hurry Up!
+      </h2>
+      <p className="text-lg text-gray-300">Sales ends in:</p>
+
+      {/* The container for the countdown numbers and separators */}
+      <div className="flex items-center justify-center gap-2 md:gap-4 mt-2">
+        <TimeBlock value={time.days} label="Days" />
+        <span className="text-5xl font-bold text-yellow-400 pb-8">:</span>
+        <TimeBlock value={time.hours} label="Hours" />
+        <span className="text-5xl font-bold text-yellow-400 pb-8">:</span>
+        <TimeBlock value={time.minutes} label="Minutes" />
+        <span className="text-5xl font-bold text-yellow-400 pb-8">:</span>
+        <TimeBlock value={time.seconds} label="Seconds" />
       </div>
-      <div className="flex justify-center">
-        <Image src="/images/m6.png" alt="promotion" width={300} height={200} />
-      </div>
-    </section>
+    </div>
   );
+  // --- END: The new visual implementation ---
 };
 
 export default DealCountdown;
