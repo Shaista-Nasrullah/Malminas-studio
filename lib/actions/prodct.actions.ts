@@ -2,7 +2,7 @@
 
 import { prisma } from "@/db/prisma";
 import { formatError } from "../utils";
-import { LATEST_PRODUCTS_LIMIT, PAGE_SIZE } from "../constants";
+import { LATEST_PRODUCTS_LIMIT } from "../constants";
 import { revalidatePath } from "next/cache";
 import { Prisma } from "@prisma/client";
 import { insertProductSchema, updateProductSchema } from "../validators";
@@ -38,107 +38,6 @@ export async function getProductById(productId: string) {
   });
   return data;
 }
-
-// --- THIS IS THE MAINLY UPDATED FUNCTION ---
-// export async function getAllProducts({
-//   query,
-//   limit = PAGE_SIZE,
-//   page,
-//   category, // This will now be a category SLUG
-//   subcategory, // NEW: This will be a sub-category SLUG
-//   price,
-//   rating,
-//   sort,
-// }: {
-//   query: string;
-//   limit?: number;
-//   page: number;
-//   category?: string;
-//   subcategory?: string; // NEW
-//   price?: string;
-//   rating?: string;
-//   sort?: string;
-// }) {
-//   // Search query filter
-//   const queryFilter: Prisma.ProductWhereInput =
-//     query && query !== "all"
-//       ? {
-//           name: {
-//             contains: query,
-//             // 'insensitive' mode is for PostgreSQL. MySQL is case-insensitive by default.
-//             // Prisma is smart enough to handle this, but it's good to know.
-//             mode: "insensitive",
-//           },
-//         }
-//       : {};
-
-//   // --- NEW relational filters for category and sub-category ---
-//   const categoryFilter: Prisma.ProductWhereInput =
-//     category && category !== "all" ? { category: { slug: category } } : {};
-
-//   const subCategoryFilter: Prisma.ProductWhereInput =
-//     subcategory && subcategory !== "all"
-//       ? { subCategory: { slug: subcategory } }
-//       : {};
-
-//   // Price filter (no change in logic)
-//   const priceFilter: Prisma.ProductWhereInput =
-//     price && price !== "all"
-//       ? {
-//           price: {
-//             gte: Number(price.split("-")[0]),
-//             lte: Number(price.split("-")[1]),
-//           },
-//         }
-//       : {};
-
-//   // Rating filter (no change in logic)
-//   const ratingFilter: Prisma.ProductWhereInput =
-//     rating && rating !== "all"
-//       ? {
-//           rating: {
-//             gte: Number(rating),
-//           },
-//         }
-//       : {};
-
-//   // Combine all `where` clauses
-//   const whereClause: Prisma.ProductWhereInput = {
-//     ...queryFilter,
-//     ...categoryFilter,
-//     ...subCategoryFilter,
-//     ...priceFilter,
-//     ...ratingFilter,
-//   };
-
-//   const data = await prisma.product.findMany({
-//     where: whereClause,
-
-//     include: {
-//       category: true,
-//       subCategory: true,
-//     },
-
-//     orderBy:
-//       sort === "lowest"
-//         ? { price: "asc" }
-//         : sort === "highest"
-//           ? { price: "desc" }
-//           : sort === "rating"
-//             ? { rating: "desc" }
-//             : { createdAt: "desc" },
-//     skip: (page - 1) * limit,
-//     take: limit,
-//   });
-
-//   // Get the count of products matching the filters for accurate pagination
-//   const dataCount = await prisma.product.count({ where: whereClause });
-
-//   return {
-//     data,
-//     totalPages: Math.ceil(dataCount / limit),
-//   };
-// }
 
 // --- THE NEW, UNIFIED FUNCTION ---
 export async function getAllProducts({
@@ -315,30 +214,6 @@ export async function updateProduct(data: z.infer<typeof updateProductSchema>) {
   }
 }
 
-// export async function createProduct(data: z.infer<typeof insertProductSchema>) {
-//   try {
-//     const product = insertProductSchema.parse(data);
-//     await prisma.product.create({ data: product });
-//     revalidatePath("/admin/products");
-//     return { success: true, message: "Product created successfully" };
-//   } catch (error) {
-//     return { success: false, message: formatError(error) };
-//   }
-// }
-
-// export async function updateProduct(data: z.infer<typeof updateProductSchema>) {
-//   try {
-//     const product = updateProductSchema.parse(data);
-//     const { id, ...rest } = product;
-//     await prisma.product.update({ where: { id }, data: rest });
-//     revalidatePath("/admin/products");
-//     revalidatePath(`/admin/products/${id}/edit`);
-//     return { success: true, message: "Product updated successfully" };
-//   } catch (error) {
-//     return { success: false, message: formatError(error) };
-//   }
-// }
-
 // No changes needed for featured products.
 export async function getFeaturedProducts() {
   const data = await prisma.product.findMany({
@@ -354,7 +229,6 @@ export async function getDealOfTheMonthProduct() {
   try {
     const product = await prisma.product.findFirst({
       where: {
-        isFeatured: true,
         discountPercentage: {
           gt: 0,
         },
@@ -374,5 +248,67 @@ export async function getDealOfTheMonthProduct() {
   } catch (error) {
     console.error("Failed to fetch deal of the month:", error);
     return null;
+  }
+}
+
+// --- ADD THIS NEW FUNCTION ---
+
+/**
+ * Fetches a random selection of related products from the same category.
+ * This is achieved by first counting the available products and then
+ * fetching a limited number from a random starting point (offset).
+ *
+ * @param {object} params - The parameters for fetching related products.
+ * @param {string} params.productId - The ID of the current product to exclude from the results.
+ * @param {string} params.categoryId - The ID of the category to find related products in.
+ * @param {number} [params.limit=4] - The maximum number of related products to return.
+ * @returns {Promise<Product[]>} A promise that resolves to an array of related products. Returns an empty array on error.
+ */
+export async function getRandomRelatedProducts({
+  productId,
+  categoryId,
+  limit = 4,
+}: {
+  productId: string;
+  categoryId: string;
+  limit?: number;
+}): Promise<Product[]> {
+  try {
+    // 1. Define the query conditions to find related products
+    const where: Prisma.ProductWhereInput = {
+      categoryId,
+      NOT: {
+        id: productId, // Exclude the current product
+      },
+    };
+
+    // 2. Get the total count of all possible related products
+    const totalRelatedProducts = await prisma.product.count({ where });
+
+    // 3. If there are no related products, return an empty array immediately
+    if (totalRelatedProducts === 0) {
+      return [];
+    }
+
+    // 4. Calculate a random starting point (offset) for the database query
+    const take = Math.min(limit, totalRelatedProducts);
+    const maxSkip = totalRelatedProducts - take;
+    const skip = Math.floor(Math.random() * (maxSkip + 1));
+
+    // 5. Fetch the random batch of products from the database
+    const products = await prisma.product.findMany({
+      where,
+      take,
+      skip,
+    });
+
+    return products;
+  } catch (error) {
+    console.error(
+      "Failed to fetch random related products:",
+      formatError(error)
+    );
+    // Return an empty array on error to prevent the UI from crashing
+    return [];
   }
 }

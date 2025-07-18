@@ -7,15 +7,19 @@ import { Cart, CartItem } from "@/types";
 import { toast } from "sonner";
 import { addItemToCart, removeItemFromCart } from "@/lib/actions/cart.actions";
 import { useTransition } from "react";
-// --- 1. IMPORT Link from next/link ---
-import Link from "next/link";
 
 const AddToCart = ({ cart, item }: { cart?: Cart; item: CartItem }) => {
   const router = useRouter();
-  const [isPending, startTransition] = useTransition();
+
+  // --- 1. CREATE SEPARATE TRANSITION STATES ---
+  // Each action gets its own state to track its loading status independently.
+  const [isAddToCartPending, startAddToCartTransition] = useTransition();
+  const [isBuyNowPending, startBuyNowTransition] = useTransition();
+  const [isRemoveItemPending, startRemoveItemTransition] = useTransition();
 
   const handleAddToCart = async () => {
-    startTransition(async () => {
+    // Use the specific transition for this action
+    startAddToCartTransition(async () => {
       const res = await addItemToCart(item);
       if (!res.success) {
         toast.error(res.message);
@@ -30,8 +34,21 @@ const AddToCart = ({ cart, item }: { cart?: Cart; item: CartItem }) => {
     });
   };
 
+  const handleBuyNow = async () => {
+    // Use the specific transition for this action
+    startBuyNowTransition(async () => {
+      const res = await addItemToCart(item);
+      if (res.success) {
+        router.push("/checkout");
+      } else {
+        toast.error(res.message);
+      }
+    });
+  };
+
   const handleRemoveFromCart = async () => {
-    startTransition(async () => {
+    // Use the specific transition for this action
+    startRemoveItemTransition(async () => {
       const res = await removeItemFromCart(item.productId);
       if (res.success) {
         toast.success(res.message);
@@ -44,19 +61,34 @@ const AddToCart = ({ cart, item }: { cart?: Cart; item: CartItem }) => {
   const existItem =
     cart && cart.items.find((x) => x.productId === item.productId);
 
+  // Disable all buttons if ANY action is pending to prevent conflicts.
+  const anyActionIsPending =
+    isAddToCartPending || isBuyNowPending || isRemoveItemPending;
+
   return existItem ? (
-    // This part remains the same (quantity stepper for items already in cart)
     <div>
-      <Button type="button" variant="outline" onClick={handleRemoveFromCart}>
-        {isPending ? (
+      <Button
+        type="button"
+        variant="outline"
+        onClick={handleRemoveFromCart}
+        disabled={anyActionIsPending}
+      >
+        {/* --- 2. USE INDIVIDUAL PENDING STATE --- */}
+        {isRemoveItemPending ? (
           <Loader className="w-4 h-4 animate-spin" />
         ) : (
           <Minus className="w-4 h-4" />
         )}
       </Button>
       <span className="px-2">{existItem.qty}</span>
-      <Button type="button" variant="outline" onClick={handleAddToCart}>
-        {isPending ? (
+      <Button
+        type="button"
+        variant="outline"
+        onClick={handleAddToCart}
+        disabled={anyActionIsPending}
+      >
+        {/* --- 2. USE INDIVIDUAL PENDING STATE --- */}
+        {isAddToCartPending ? (
           <Loader className="w-4 h-4 animate-spin" />
         ) : (
           <Plus className="w-4 h-4" />
@@ -64,17 +96,16 @@ const AddToCart = ({ cart, item }: { cart?: Cart; item: CartItem }) => {
       </Button>
     </div>
   ) : (
-    // --- 2. THIS IS THE UPDATED SECTION ---
-    // A flex container to stack the buttons vertically
     <div className="flex w-full flex-col gap-3">
-      {/* Add to Cart Button is now the secondary action */}
       <Button
-        variant="secondary" // CHANGED: This button is now styled as secondary
+        variant="secondary"
         className="w-full"
         type="button"
+        disabled={anyActionIsPending}
         onClick={handleAddToCart}
       >
-        {isPending ? (
+        {/* --- 2. USE INDIVIDUAL PENDING STATE --- */}
+        {isAddToCartPending ? (
           <Loader className="w-4 h-4 animate-spin mr-2" />
         ) : (
           <Plus className="w-4 h-4 mr-2" />
@@ -82,13 +113,15 @@ const AddToCart = ({ cart, item }: { cart?: Cart; item: CartItem }) => {
         Add To Cart
       </Button>
 
-      {/* "Buy it now" Button is now the default/primary action */}
       <Button
-        asChild
-        // CHANGED: The "variant" prop is removed, so it uses the default style
         className="w-full"
+        type="button"
+        disabled={anyActionIsPending}
+        onClick={handleBuyNow}
       >
-        <Link href="/checkout">Buy it now</Link>
+        {/* --- 2. USE INDIVIDUAL PENDING STATE --- */}
+        {isBuyNowPending && <Loader className="w-4 h-4 animate-spin mr-2" />}
+        Buy it now
       </Button>
     </div>
   );

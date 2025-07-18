@@ -17,6 +17,7 @@ const OrderSummary = async () => {
       <ul role="list" className="divide-y divide-gray-200">
         {cart.items.map((item) => (
           <li key={item.slug} className="flex items-center py-4">
+            {/* 1. The container must be `relative` for the badge to be positioned correctly. */}
             <div className="relative h-16 w-16 flex-shrink-0 overflow-hidden rounded-lg border border-gray-200 bg-white">
               <Image
                 src={item.image}
@@ -24,14 +25,23 @@ const OrderSummary = async () => {
                 fill
                 className="object-cover object-center"
               />
-              <span className="absolute -top-2 -right-2 flex h-6 w-6 items-center justify-center rounded-full bg-gray-500 text-xs font-medium text-white">
+              {/* 2. This is the precisely styled badge */}
+              <span
+                className="absolute -top-1 -right-1 z-10 flex h-6 w-6 items-center justify-center 
+           rounded-full bg-gray-700 text-xs font-medium text-white"
+              >
                 {item.qty}
               </span>
             </div>
+
             <div className="ml-4 flex flex-1 flex-col text-sm">
               <h3 className="font-medium text-gray-900">{item.name}</h3>
               {/* Optional: Add color/size if available */}
-              {/* <p className="text-gray-500">Color / Size</p> */}
+              {item.color && <p className="text-gray-500">{item.color}</p>}
+              {/* I'm assuming you have a way to generate this */}
+              <p className="text-gray-500 text-xs mt-1">
+                Estimated Delivery Time: 23/07/2025
+              </p>
             </div>
             <p className="text-sm font-medium text-gray-900">
               {formatCurrency(item.price * item.qty)}

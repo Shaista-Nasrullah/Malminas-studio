@@ -379,7 +379,7 @@ const CheckoutForm = ({ user }: CheckoutFormProps) => {
           />
         </section>
 
-        {/* --- BILLING ADDRESS SECTION --- */}
+        {/* --- BILLING ADDRESS SECTION ---
         <section>
           <h2 className="text-xl font-semibold">Billing address</h2>
           <RadioGroup
@@ -417,7 +417,7 @@ const CheckoutForm = ({ user }: CheckoutFormProps) => {
               </FormItem>
             </div>
           </RadioGroup>
-        </section>
+        </section> */}
 
         {/* --- SUBMIT BUTTON --- */}
         <div className="pt-4">

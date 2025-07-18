@@ -1,8 +1,8 @@
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import {
-  getDealOfTheMonthProduct,
   getProductBySlug,
+  getRandomRelatedProducts,
 } from "@/lib/actions/prodct.actions";
 import { notFound } from "next/navigation";
 import ProductPrice from "@/components/shared/product/product-price";
@@ -14,6 +14,7 @@ import { auth } from "@/auth";
 import Rating from "@/components/shared/product/rating";
 import DealCountdown from "@/components/deal-countdown";
 import { Metadata } from "next";
+import ProductCard from "@/components/shared/product/product-card";
 
 type Props = {
   params: { slug: string };
@@ -45,19 +46,27 @@ const ProductDetailsPage = async ({ params }: Props) => {
     notFound();
   }
 
+  // --- 2. FETCH RELATED PRODUCTS AND CART CONCURRENTLY ---
+  // We fetch these two together after we have the main product,
+  // as related products depend on the product's ID and category.
+  const [cart, relatedProducts] = await Promise.all([
+    getMyCart(),
+    getRandomRelatedProducts({
+      productId: product.id,
+      categoryId: product.categoryId, // Assumes `categoryId` is on the product model
+      limit: 4, // Fetch up to 4 related products
+    }),
+  ]);
+
   const originalPrice = Number(product.price);
-  const hasDiscount =
-    product.discountPercentage && product.discountPercentage > 0;
+  const hasDiscount = product.discountPercentage > 0;
   const salePrice = hasDiscount
     ? originalPrice * (1 - product.discountPercentage / 100)
     : originalPrice;
 
   const session = await auth();
   const userId = session?.user?.id;
-  const cart = await getMyCart();
-  const dealProduct = await getDealOfTheMonthProduct();
-
-  const isDealProductPage = dealProduct && dealProduct.slug === product.slug;
+  // NOTE: The `cart` is now fetched above using Promise.all
 
   return (
     <>
@@ -67,17 +76,14 @@ const ProductDetailsPage = async ({ params }: Props) => {
             <ProductImages images={product.images} />
           </div>
 
-          {/* --- START OF REDESIGNED RIGHT COLUMN --- */}
-          {/* We've removed padding/flex from this outer div */}
           <div className="col-span-1 md:col-span-3">
-            {/* A new inner container holds the padding and vertical spacing */}
             <div className="space-y-8 p-8 md:p-12 lg:p-16 bg-white rounded-lg">
               {/* --- Section 1: Core Product Info --- */}
               <div className="space-y-3">
                 <p className="text-sm font-medium tracking-wider uppercase text-gray-500">
                   {product.brand}
                 </p>
-                <h1 className="text-4xl lg:text-5xl font-bold tracking-tight text-gray-900">
+                <h1 className="text-4xl lg:text-5xl font-semibold tracking-tight text-gray-900">
                   {product.name}
                 </h1>
                 <div className="flex items-center gap-4 pt-1">
@@ -90,9 +96,7 @@ const ProductDetailsPage = async ({ params }: Props) => {
                   </a>
                 </div>
               </div>
-
               <hr />
-
               {/* --- Section 2: Price & Deal Info --- */}
               <div>
                 <div className="flex items-baseline gap-3">
@@ -101,31 +105,31 @@ const ProductDetailsPage = async ({ params }: Props) => {
                       Rs.{originalPrice.toFixed(0)}
                     </p>
                   )}
+
                   <ProductPrice
                     value={salePrice}
-                    className="text-4xl font-bold text-gray-800"
+                    className="text-4xl font-semibold text-gray-800"
                   />
+
                   {hasDiscount && (
                     <Badge className="bg-red-500 text-white hover:bg-red-600 px-3 py-1 text-sm">
                       {product.discountPercentage}% OFF
                     </Badge>
                   )}
                 </div>
-                {/* Countdown is placed right after the price for urgency */}
-                {isDealProductPage && (
+                {hasDiscount && (
                   <div className="mt-6">
                     <DealCountdown
                       variant="compact"
                       dealEndDate={
-                        dealProduct.discountEndDate
-                          ? new Date(dealProduct.discountEndDate)
+                        product.discountEndDate
+                          ? new Date(product.discountEndDate)
                           : undefined
                       }
                     />
                   </div>
                 )}
               </div>
-
               {/* --- Section 3: Actions Card --- */}
               <Card className="border-gray-200 shadow-md">
                 <CardContent className="p-6">
@@ -168,7 +172,6 @@ const ProductDetailsPage = async ({ params }: Props) => {
                   </div>
                 </CardContent>
               </Card>
-
               {/* --- Section 4: Description --- */}
               <div className="space-y-3 pt-4">
                 <h2 className="font-bold text-xl text-gray-800">Description</h2>
@@ -186,9 +189,23 @@ const ProductDetailsPage = async ({ params }: Props) => {
               </div>
             </div>
           </div>
-          {/* --- END OF REDESIGNED RIGHT COLUMN --- */}
         </div>
       </section>
+
+      {/* --- 3. ADD THE NEW RELATED PRODUCTS SECTION --- */}
+      {/* This section will only render if there are related products to show */}
+      {relatedProducts && relatedProducts.length > 0 && (
+        <section className="wrapper my-12">
+          <h2 className="h2-bold mb-6 text-center md:text-left">
+            You Might Also Like
+          </h2>
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+            {relatedProducts.map((p) => (
+              <ProductCard key={p.id} product={p} />
+            ))}
+          </div>
+        </section>
+      )}
     </>
   );
 };
