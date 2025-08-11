@@ -16,11 +16,6 @@ const UserButton = async () => {
 
   if (!session) {
     return (
-      // <Button asChild>
-      //   <Link href="/sign-in">
-      //     <UserIcon className="h-5 w-5" /> Sign In
-      //   </Link>
-      // </Button>
       <Link href="/sign-in">
         <CiUser size={26} />
       </Link>

@@ -1,3 +1,5 @@
+// email/purchase-receipt.tsx
+
 import {
   Body,
   Column,
@@ -12,56 +14,26 @@ import {
   Tailwind,
   Text,
 } from "@react-email/components";
-import { Order } from "@/types";
+import { Order, ShippingAddress } from "@/types"; // Make sure ShippingAddress is imported
 import { formatCurrency } from "@/lib/utils";
-import sampleData from "@/db/sample-data";
-require("dotenv").config();
 
-PurchaseReceiptEmail.PreviewProps = {
-  order: {
-    id: crypto.randomUUID(),
-    userId: "123",
-    user: {
-      name: "John Doe",
-      email: "test@test.com",
-    },
-    paymentMethod: "CashOnDelivery",
-    shippingAddress: {
-      fullName: "John Doe",
-      streetAddress: "123 Main st",
-      city: "New York",
-      postalCode: "10001",
-      country: "US",
-      phone: "03401248854",
-    },
-    createdAt: new Date(),
-    totalPrice: "100",
-    taxPrice: "10",
-    shippingPrice: "10",
-    itemsPrice: "80",
-    orderitems: sampleData.products.map((x) => ({
-      name: x.name,
-      orderId: "123",
-      productId: "123",
-      slug: x.slug,
-      qty: x.stock,
-      image: x.images[0],
-      price: x.price.toString(),
-    })),
-    isDelivered: true,
-    deliveredAt: new Date(),
-    isPaid: true,
-    paidAt: new Date(),
-  },
-} satisfies OrderInformationProps;
+// This is just for previewing in development, can be left as is.
+// import sampleData from "@/db/sample-data";
+// PurchaseReceiptEmail.PreviewProps = { ... };
 
 const dateFormatter = new Intl.DateTimeFormat("en", { dateStyle: "medium" });
 
 type OrderInformationProps = {
-  order: Order;
+  order: Order & { shippingAddress: ShippingAddress }; // Ensure type safety
 };
 
 export default function PurchaseReceiptEmail({ order }: OrderInformationProps) {
+  // --- [THE FIX] ---
+  // We convert the 'createdAt' string from the order object back into a real Date object.
+  // This ensures the dateFormatter can understand it.
+  const purchaseDate = new Date(order.createdAt);
+  // --- [END OF FIX] ---
+
   return (
     <Html>
       <Preview>View order receipt</Preview>
@@ -83,7 +55,8 @@ export default function PurchaseReceiptEmail({ order }: OrderInformationProps) {
                     Purchase Date
                   </Text>
                   <Text className="mt-0 mr-4">
-                    {dateFormatter.format(order.createdAt)}
+                    {/* We now format our new, valid Date object */}
+                    {dateFormatter.format(purchaseDate)}
                   </Text>
                 </Column>
                 <Column>

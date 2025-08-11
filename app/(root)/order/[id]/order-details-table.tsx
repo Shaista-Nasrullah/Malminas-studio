@@ -1,4 +1,4 @@
-// order-confirmation-display.tsx
+// app/orders/[id]/order-confirmation-display.tsx
 
 "use client";
 
@@ -7,12 +7,13 @@ import Image from "next/image";
 import { Order } from "@/types";
 import { formatCurrency, formatId } from "@/lib/utils";
 import { CheckCircle2 } from "lucide-react";
-// import OrderMap from "./OrderMap";
-// import CheckoutFooter from "@/components/checkout/CheckoutFooter";
 import { Button } from "@/components/ui/button";
-import OrderMap from "@/components/OrderMap";
+// import OrderMap from "@/components/orders/OrderMap"; // Using the path to our new simple iframe map
 import CheckoutFooter from "@/components/FooterLinks";
+import OrderMap from "@/components/OrderMap";
 
+// --- 1. SIMPLIFY PROPS ---
+// We go back to only needing the 'order' object. The 'position' prop is removed.
 const OrderConfirmationDisplay = ({ order }: { order: Order }) => {
   const {
     id,
@@ -24,6 +25,8 @@ const OrderConfirmationDisplay = ({ order }: { order: Order }) => {
     totalPrice,
   } = order;
 
+  // --- 2. CREATE THE ADDRESS STRING HERE ---
+  // This combines the address parts into a single string for the map.
   const fullAddressString = `${shippingAddress.streetAddress}, ${shippingAddress.city}, ${shippingAddress.postalCode}, ${shippingAddress.country}`;
 
   return (
@@ -42,10 +45,11 @@ const OrderConfirmationDisplay = ({ order }: { order: Order }) => {
             </div>
           </div>
 
-          {/* Map */}
+          {/* --- 3. CALL THE SIMPLE IFRAME MAP --- */}
+          {/* This now directly passes the address string to our simple OrderMap component. */}
           <OrderMap address={fullAddressString} />
 
-          {/* Order Details Card */}
+          {/* Order Details Card (This part remains unchanged) */}
           <div className="rounded-lg border bg-white p-6">
             <h2 className="text-lg font-semibold">Order details</h2>
             <div className="mt-4 space-y-6">
@@ -82,18 +86,6 @@ const OrderConfirmationDisplay = ({ order }: { order: Order }) => {
                     {shippingAddress.country}
                   </address>
                 </div>
-                {/* <div>
-                  <h3 className="font-medium text-gray-800">Billing address</h3>
-                  <address className="mt-1 not-italic text-sm text-gray-600">
-                    {shippingAddress.fullName}
-                    <br />
-                    {shippingAddress.streetAddress}
-                    <br />
-                    {shippingAddress.city}, {shippingAddress.postalCode}
-                    <br />
-                    {shippingAddress.country}
-                  </address>
-                </div> */}
                 <div>
                   <h3 className="font-medium text-gray-800">Shipping method</h3>
                   <p className="mt-1 text-sm text-gray-600">
@@ -101,11 +93,10 @@ const OrderConfirmationDisplay = ({ order }: { order: Order }) => {
                   </p>
                 </div>
               </div>
-              {/* Shipping Method */}
             </div>
           </div>
 
-          {/* Footer Actions */}
+          {/* Footer Actions (This part remains unchanged) */}
           <div className="flex items-center justify-between">
             <p className="text-sm text-gray-600">
               Need help?{" "}
@@ -125,9 +116,9 @@ const OrderConfirmationDisplay = ({ order }: { order: Order }) => {
         </div>
       </div>
 
-      {/* --- RIGHT COLUMN --- */}
+      {/* --- RIGHT COLUMN (This part remains unchanged) --- */}
       <div className=" hidden lg:block sticky top-0 h-screen border-l bg-gray-50 px-4">
-        <div className="py-16 space-y-8">
+        <div className="py-6 space-y-8">
           {/* Logo */}
           <div className="flex justify-center">
             <Link href="/">
@@ -150,10 +141,7 @@ const OrderConfirmationDisplay = ({ order }: { order: Order }) => {
                     fill
                     className="object-cover"
                   />
-                  <span
-                    className="absolute -top-1 -right-1 z-10 flex h-6 w-6 items-center justify-center 
-           rounded-full bg-gray-700 text-xs font-medium text-white"
-                  >
+                  <span className="absolute -top-1 -right-1 z-10 flex h-6 w-6 items-center justify-center rounded-full bg-gray-700 text-xs font-medium text-white">
                     {item.qty}
                   </span>
                 </div>

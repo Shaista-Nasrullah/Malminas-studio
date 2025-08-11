@@ -146,3 +146,16 @@ const NUMBER_FORMATTER = new Intl.NumberFormat("en-PK");
 export function formatNumber(number: number) {
   return NUMBER_FORMATTER.format(number);
 }
+
+// lib/utils.ts
+
+// ... (your other utility functions like formatCurrency, formatId)
+
+/**
+ * Converts a complex object (like a Prisma model instance) into a plain
+ * JavaScript object that is safe to pass from Server to Client Components.
+ */
+export const convertToPlainObject1 = (obj: any) => {
+  // The simplest and most effective way to do this is to serialize and then deserialize.
+  return JSON.parse(JSON.stringify(obj));
+};
