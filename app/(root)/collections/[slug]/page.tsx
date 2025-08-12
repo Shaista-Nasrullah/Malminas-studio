@@ -7,6 +7,7 @@ import ProductCard from "@/components/shared/product/product-card";
 import { CollectionFilterBar } from "@/components/shared/product/CollectionFilterBar";
 import Pagination from "@/components/shared/pagination";
 
+// This is the correct way to type the props for a page
 type PageProps = {
   params: { slug: string };
   searchParams: {
@@ -17,18 +18,21 @@ type PageProps = {
   };
 };
 
-// --- FIX #1: Await the props before using them ---
-export async function generateMetadata(props: PageProps) {
-  const { params } = await props; // <-- ADD 'await' HERE
+export async function generateMetadata({
+  params,
+}: {
+  params: { slug: string };
+}) {
   const category = await getCategoryBySlug(params.slug);
   return {
     title: category ? category.name : "Collection",
   };
 }
 
-// --- FIX #2: Await the props here as well ---
+// Use the correct PageProps type
 const CollectionPage = async (props: PageProps) => {
-  const { params, searchParams } = await props; // <-- ADD 'await' HERE
+  // Destructure the props directly, WITHOUT 'await'
+  const { params, searchParams } = props;
 
   const { slug } = params;
   const {
@@ -60,7 +64,7 @@ const CollectionPage = async (props: PageProps) => {
 
       <CollectionFilterBar productCount={productsData.count} />
 
-      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 mt-8">
+      <div className="grid grid-cols-2 md-grid-cols-3 lg:grid-cols-4 gap-6 mt-8">
         {productsData.data.length === 0 ? (
           <p className="col-span-full text-center">
             No products found for this criteria.
