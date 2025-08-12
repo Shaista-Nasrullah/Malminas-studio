@@ -10,16 +10,17 @@ import { auth } from "@/auth";
 import { Metadata } from "next";
 import ProductCard from "@/components/shared/product/product-card";
 import ProductDetailsClient from "./product-details-client";
-
-// --- 1. IMPORT THE CONVERSION UTILITY ---
 import { convertToPlainObject, convertToPlainObject1 } from "@/lib/utils";
 
-// generateMetadata remains unchanged.
+// --- 1. IMPORT THE 'Product' TYPE FROM PRISMA ---
+// This gives us a proper type to use instead of 'any'.
+import { Product } from "@prisma/client";
+
 export async function generateMetadata(props: {
   params: Promise<{ slug: string }>;
 }): Promise<Metadata> {
   const { slug } = await props.params;
-  const productData = await getProductBySlug(slug); // Use a different variable name to avoid confusion
+  const productData = await getProductBySlug(slug);
   if (!productData) {
     return { title: "Product Not Found" };
   }
@@ -38,8 +39,6 @@ const ProductDetailsPage = async (props: {
   params: Promise<{ slug: string }>;
 }) => {
   const { slug } = await props.params;
-
-  // --- 2. FETCH THE RAW, "FANCY" DATA ---
   const rawProduct = await getProductBySlug(slug);
 
   if (!rawProduct) {
@@ -55,12 +54,9 @@ const ProductDetailsPage = async (props: {
     }),
   ]);
 
-  // --- 3. CONVERT THE RAW DATA TO "PLAIN" OBJECTS ---
-  // This is the crucial step that fixes the error.
   const product = convertToPlainObject(rawProduct);
   const cart = rawCart ? convertToPlainObject(rawCart) : null;
 
-  // --- The rest of the logic remains the same ---
   const isDealInitiallyActive =
     product.discountPercentage > 0 &&
     product.discountEndDate &&
@@ -72,7 +68,6 @@ const ProductDetailsPage = async (props: {
   return (
     <>
       <section className="wrapper my-8">
-        {/* --- 4. PASS THE "PLAIN" OBJECTS AS PROPS --- */}
         <ProductDetailsClient
           product={product}
           cart={cart}
@@ -88,9 +83,11 @@ const ProductDetailsPage = async (props: {
             You Might Also Like
           </h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-            {/* We can pass the raw relatedProducts here if ProductCard doesn't cause issues,
-                but it's safer to convert them too if they are passed to client components. */}
-            {relatedProducts.map((p: any) => (
+            {/*
+              --- 2. THE FIX: Replace 'any' with the imported 'Product' type ---
+              This resolves the 'no-explicit-any' build error.
+            */}
+            {relatedProducts.map((p: Product) => (
               <ProductCard key={p.id} product={convertToPlainObject1(p)} />
             ))}
           </div>

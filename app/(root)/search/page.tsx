@@ -1,7 +1,7 @@
 import ProductCard from "@/components/shared/product/product-card";
-import { Button } from "@/components/ui/button";
+// import { Button } from "@/components/ui/button";
 import { getAllProducts } from "@/lib/actions/prodct.actions";
-import Link from "next/link";
+// import Link from "next/link";
 import { CollectionFilterBar } from "@/components/shared/product/CollectionFilterBar"; // Import the correct component
 
 export async function generateMetadata(props: {

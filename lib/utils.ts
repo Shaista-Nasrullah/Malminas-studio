@@ -6,12 +6,12 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
-//Convert prisma object into a regular JS object
+// Convert prisma object into a regular JS object
 export function convertToPlainObject<T>(value: T): T {
   return JSON.parse(JSON.stringify(value));
 }
 
-//Format number with decimal places
+// Format number with decimal places
 export function formatNumberWithDecimal(num: number): string {
   const [int, decimal] = num.toString().split(".");
   return decimal ? `${int}.${decimal.padEnd(2, "0")}` : `${int}.00`;
@@ -78,23 +78,23 @@ export function formatId(id: string) {
 // Format date and times
 export const formatDateTime = (dateString: Date) => {
   const dateTimeOptions: Intl.DateTimeFormatOptions = {
-    month: "short", // abbreviated month name (e.g., 'Oct')
-    year: "numeric", // abbreviated month name (e.g., 'Oct')
-    day: "numeric", // numeric day of the month (e.g., '25')
-    hour: "numeric", // numeric hour (e.g., '8')
-    minute: "numeric", // numeric minute (e.g., '30')
-    hour12: true, // use 12-hour clock (true) or 24-hour clock (false)
+    month: "short",
+    year: "numeric",
+    day: "numeric",
+    hour: "numeric",
+    minute: "numeric",
+    hour12: true,
   };
   const dateOptions: Intl.DateTimeFormatOptions = {
-    weekday: "short", // abbreviated weekday name (e.g., 'Mon')
-    month: "short", // abbreviated month name (e.g., 'Oct')
-    year: "numeric", // numeric year (e.g., '2023')
-    day: "numeric", // numeric day of the month (e.g., '25')
+    weekday: "short",
+    month: "short",
+    year: "numeric",
+    day: "numeric",
   };
   const timeOptions: Intl.DateTimeFormatOptions = {
-    hour: "numeric", // numeric hour (e.g., '8')
-    minute: "numeric", // numeric minute (e.g., '30')
-    hour12: true, // use 12-hour clock (true) or 24-hour clock (false)
+    hour: "numeric",
+    minute: "numeric",
+    hour12: true,
   };
   const formattedDateTime: string = new Date(dateString).toLocaleString(
     "en-PK",
@@ -147,15 +147,5 @@ export function formatNumber(number: number) {
   return NUMBER_FORMATTER.format(number);
 }
 
-// lib/utils.ts
-
-// ... (your other utility functions like formatCurrency, formatId)
-
-/**
- * Converts a complex object (like a Prisma model instance) into a plain
- * JavaScript object that is safe to pass from Server to Client Components.
- */
-export const convertToPlainObject1 = (obj: any) => {
-  // The simplest and most effective way to do this is to serialize and then deserialize.
-  return JSON.parse(JSON.stringify(obj));
-};
+// --- DELETED: The 'convertToPlainObject1' function was removed because it is a duplicate. ---
+// You should use the original 'convertToPlainObject' function instead.
