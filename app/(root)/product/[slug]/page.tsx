@@ -10,7 +10,7 @@ import { auth } from "@/auth";
 import { Metadata } from "next";
 import ProductCard from "@/components/shared/product/product-card";
 import ProductDetailsClient from "./product-details-client";
-import { convertToPlainObject, convertToPlainObject1 } from "@/lib/utils";
+import { convertToPlainObject } from "@/lib/utils";
 
 // --- 1. IMPORT THE 'Product' TYPE FROM PRISMA ---
 // This gives us a proper type to use instead of 'any'.
@@ -88,7 +88,7 @@ const ProductDetailsPage = async (props: {
               This resolves the 'no-explicit-any' build error.
             */}
             {relatedProducts.map((p: Product) => (
-              <ProductCard key={p.id} product={convertToPlainObject1(p)} />
+              <ProductCard key={p.id} product={convertToPlainObject(p)} />
             ))}
           </div>
         </section>
