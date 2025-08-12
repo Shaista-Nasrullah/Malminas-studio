@@ -36,8 +36,8 @@ const Footer = async () => {
           <div className="space-y-6">
             <Link href="/">
               <Image
-                src="/images/logo-removebg-preview.png"
-                alt="Kuchi Jewels Logo"
+                src="/images/logoo.png"
+                alt="Malmina studio Logo"
                 width={190}
                 height={220}
               />
