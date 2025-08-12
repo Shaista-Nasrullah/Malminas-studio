@@ -1,29 +1,21 @@
 // FILE: app/(root)/collections/[slug]/page.tsx
 
-// A very simple type for the props, which we know is correct.
-type PageProps = {
-  params: {
-    slug: string;
-  };
-};
-
-// This is the simplest possible page component.
-// It will not cause any build errors.
-const CollectionPage = async ({ params }: PageProps) => {
-  const { slug } = params;
-
+// This is the simplest possible page. It uses an inline type for props
+// to avoid any conflict with a global PageProps type.
+const SimplestCollectionPage = async ({
+  params,
+}: {
+  params: { slug: string };
+}) => {
   return (
-    <div className="wrapper mx-auto px-4 py-8">
-      <h1 className="text-4xl font-bold mb-4">Collection: {slug}</h1>
-      <p>
-        Products for this collection will be displayed here soon. This page is
-        currently under construction.
-      </p>
+    <div>
+      <h1>Collection: {params.slug}</h1>
+      <p>This is a temporary page to allow the build to succeed.</p>
     </div>
   );
 };
 
-export default CollectionPage;
+export default SimplestCollectionPage;
 
 // // FILE: app/(root)/collections/[slug]/page.tsx
 
