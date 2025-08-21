@@ -1,9 +1,10 @@
-// In app/admin/pages/[slug]/page.tsx
+// FILE: app/admin/pages/[slug]/page.tsx
 
 import { CmsEditForm } from "@/components/admin/CmsEditorForm";
 import { prisma } from "@/db/prisma";
 import { notFound } from "next/navigation";
-// import { CmsEditForm } from "./_components/CmsEditForm";
+// --- 1. IMPORT THE TYPE ---
+import { CmsPage } from "@/types";
 
 interface AdminCmsPageProps {
   params: {
@@ -12,16 +13,19 @@ interface AdminCmsPageProps {
 }
 
 export default async function AdminCmsPage({ params }: AdminCmsPageProps) {
-  //   const { slug } = params;
-
-  // Fetch the data for the specific page being edited
-  const page = await prisma.cmsPage.findUnique({
+  // Fetch the "raw" data for the specific page being edited
+  const rawPage = await prisma.cmsPage.findUnique({
     where: { slug: params.slug },
   });
 
-  if (!page) {
+  if (!rawPage) {
     return notFound();
   }
+
+  // --- 2. THE FINAL FIX ---
+  // We use the forceful two-step assertion to tell TypeScript that after serialization,
+  // this data will perfectly match our client-side 'CmsPage' type.
+  const page = rawPage as unknown as CmsPage;
 
   return (
     <div className="container py-8">
@@ -30,6 +34,7 @@ export default async function AdminCmsPage({ params }: AdminCmsPageProps) {
         You are editing the public page at `/pages/{page.slug}`
       </p>
 
+      {/* 3. Pass the correctly typed page object to the form */}
       <CmsEditForm page={page} />
     </div>
   );

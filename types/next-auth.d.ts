@@ -1,31 +1,31 @@
-import { DefaultSession } from "next-auth";
+// FILE: types/next-auth.d.ts
 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-import NextAuth from "next-auth";
+// This imports the default types from the library
+import { DefaultSession, DefaultUser } from "next-auth";
+import { DefaultJWT } from "next-auth/jwt";
 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-import { JWT } from "next-auth/jwt";
-
+// Here, we are "augmenting" or "extending" the original library types
 declare module "next-auth/jwt" {
-  /** Returned by the `jwt` callback and `getToken`, when using JWT sessions */
-  interface JWT {
-    sub: string;
+  // We are telling TypeScript that our JWT will also have these properties
+  interface JWT extends DefaultJWT {
+    id: string; // Add the 'id' property
     role: string;
-    name: string;
   }
 }
 
 declare module "next-auth" {
-  /**
-   * Returned by `useSession`, `getSession` and received as a prop on the `SessionProvider` React Context
-   */
+  // We are telling TypeScript that our Session will also have these properties
   interface Session {
     user: {
+      id: string; // Add the 'id' property
       role: string;
-    } & DefaultSession["user"];
+    } & DefaultSession["user"]; // This keeps the default properties like name, email, image
   }
 
-  interface User {
+  // We are telling TypeScript that our User object will also have these properties
+  interface User extends DefaultUser {
     role: string;
+    // This is the custom property that was causing the error
+    rememberMe?: boolean;
   }
 }

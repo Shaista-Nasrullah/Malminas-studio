@@ -1,3 +1,5 @@
+// FILE: components/admin/product-form.tsx
+
 "use client";
 
 import { toast } from "sonner";
@@ -10,8 +12,6 @@ import { ControllerRenderProps, SubmitHandler, useForm } from "react-hook-form";
 import { z } from "zod";
 import { useEffect, useState } from "react";
 import slugify from "slugify";
-
-// UI Components
 import {
   Form,
   FormControl,
@@ -34,18 +34,16 @@ import { Card, CardContent } from "../ui/card";
 import Image from "next/image";
 import { Checkbox } from "../ui/checkbox";
 import { UploadButton } from "@/lib/uploadthing";
-import { X } from "lucide-react"; // <-- IMPORT THE ICON
-// import  formatDateForInput  from "@/lib/utils";
-
-// Actions
+import { X } from "lucide-react";
 import { createProduct, updateProduct } from "@/lib/actions/prodct.actions";
 
-// PASTE THE HELPER FUNCTION HERE or import it
-const formatDateForInput = (date: Date | null | undefined): string => {
-  if (!date) return "";
-  const d = new Date(date);
-  d.setMinutes(d.getMinutes() - d.getTimezoneOffset());
-  return d.toISOString().slice(0, 16);
+const formatDateForInput = (dateString: string | null | undefined): string => {
+  if (!dateString) return "";
+  try {
+    return dateString.slice(0, 16);
+  } catch (e) {
+    return "";
+  }
 };
 
 const ProductForm = ({
@@ -64,20 +62,17 @@ const ProductForm = ({
 
   const form = useForm<z.infer<typeof insertProductSchema>>({
     resolver: zodResolver(insertProductSchema),
-    // --- THIS IS THE CRITICAL FIX ---
     defaultValues:
       product && type === "Update"
         ? {
             ...product,
             price: String(product.price),
             discountPercentage: product.discountPercentage || 0,
-            // Use the helper to format the date correctly for the input
             discountEndDate: formatDateForInput(product.discountEndDate),
           }
         : productDefaultValues,
   });
 
-  // NEW: Handler to delete an image from the form state
   const handleImageDelete = (imageUrl: string) => {
     const currentImages = form.getValues("images");
     const updatedImages = currentImages.filter((img) => img !== imageUrl);
@@ -146,8 +141,7 @@ const ProductForm = ({
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
-        {/* ... (all your other form fields remain the same) ... */}
-        {/* Name and Slug, Categories, Brand, Price etc. */}
+        {/* ... other form fields are correct ... */}
         <div className="flex flex-col md:flex-row gap-5">
           <FormField
             control={form.control}
@@ -193,7 +187,6 @@ const ProductForm = ({
             )}
           />
         </div>
-
         <div className="flex flex-col md:flex-row gap-5">
           <FormField
             control={form.control}
@@ -251,7 +244,6 @@ const ProductForm = ({
             )}
           />
         </div>
-
         <FormField
           control={form.control}
           name="brand"
@@ -265,7 +257,6 @@ const ProductForm = ({
             </FormItem>
           )}
         />
-
         <div className="flex flex-col md:flex-row gap-5">
           <FormField
             control={form.control}
@@ -309,12 +300,12 @@ const ProductForm = ({
               <FormItem className="w-full">
                 <FormLabel>Discount End Date (Optional)</FormLabel>
                 <FormControl>
+                  {/* --- THIS IS THE FINAL FIX --- */}
+                  {/* We manually handle the 'value' prop to convert null to an empty string */}
                   <Input
                     type="datetime-local"
-                    // The rest of the props from 'field' are passed correctly
                     {...field}
-                    // We remove the explicit 'value' prop here as react-hook-form
-                    // now provides the correctly formatted string from defaultValues
+                    value={field.value || ""}
                   />
                 </FormControl>
                 <FormMessage />
@@ -335,8 +326,6 @@ const ProductForm = ({
             )}
           />
         </div>
-
-        {/* --- UPDATED IMAGES FIELD --- */}
         <div className="upload-field flex flex-col md:flex-row gap-5">
           <FormField
             control={form.control}
@@ -367,7 +356,6 @@ const ProductForm = ({
                           </Button>
                         </div>
                       ))}
-
                       <FormControl>
                         <div className="w-24 h-24 flex items-center justify-center border-2 border-dashed rounded-md">
                           <UploadButton
@@ -401,9 +389,6 @@ const ProductForm = ({
             )}
           />
         </div>
-        {/* --- END OF UPDATED IMAGES FIELD --- */}
-
-        {/* ... (rest of your form: isFeatured, Description, etc.) ... */}
         <div className="upload-field">
           Featured Product
           <Card>
@@ -432,7 +417,6 @@ const ProductForm = ({
                   height={680}
                 />
               )}
-
               {isFeatured && !banner && (
                 <UploadButton
                   endpoint="imageUploader"
@@ -475,7 +459,6 @@ const ProductForm = ({
             )}
           />
         </div>
-
         <div>
           <Button
             type="submit"

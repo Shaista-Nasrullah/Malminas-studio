@@ -1,23 +1,29 @@
+import { Metadata } from "next";
 import ProductCard from "@/components/shared/product/product-card";
-// import { Button } from "@/components/ui/button";
 import { getAllProducts } from "@/lib/actions/prodct.actions";
-// import Link from "next/link";
-import { CollectionFilterBar } from "@/components/shared/product/CollectionFilterBar"; // Import the correct component
+import { CollectionFilterBar } from "@/components/shared/product/CollectionFilterBar";
 
-export async function generateMetadata(props: {
-  searchParams: Promise<{
-    q: string;
-    category: string;
-    price: string;
-    rating: string;
-  }>;
-}) {
-  const {
-    q = "all",
-    category = "all",
-    price = "all",
-    rating = "all",
-  } = await props.searchParams;
+// Define the correct props type. 'searchParams' is a plain object.
+type SearchPageProps = {
+  // Note: The 'params' object would be here for dynamic routes, but this is not a dynamic route.
+  searchParams: {
+    q?: string;
+    category?: string;
+    price?: string;
+    rating?: string;
+    availability?: string;
+    sort?: string;
+    page?: string;
+  };
+};
+
+// The 'generateMetadata' function receives the same props as the page.
+// It is async because it might need to fetch data, but the props themselves are not Promises.
+export async function generateMetadata({
+  searchParams,
+}: SearchPageProps): Promise<Metadata> {
+  // Destructure directly from the searchParams object without 'await'.
+  const { q, category, price, rating } = searchParams;
 
   const isQuerySet = q && q !== "all" && q.trim() !== "";
   const isCategorySet =
@@ -25,13 +31,16 @@ export async function generateMetadata(props: {
   const isPriceSet = price && price !== "all" && price.trim() !== "";
   const isRatingSet = rating && rating !== "all" && rating.trim() !== "";
 
-  if (isQuerySet || isCategorySet || isPriceSet || isRatingSet) {
+  // Building the title string more cleanly.
+  const titleParts = ["Search"];
+  if (isQuerySet) titleParts.push(q);
+  if (isCategorySet) titleParts.push(`Category: ${category}`);
+  if (isPriceSet) titleParts.push(`Price: ${price}`);
+  if (isRatingSet) titleParts.push(`Rating: ${rating}`);
+
+  if (titleParts.length > 1) {
     return {
-      title: `
-      Search ${isQuerySet ? q : ""}
-      ${isCategorySet ? `: Category ${category}` : ""}
-      ${isPriceSet ? `: Price ${price}` : ""}
-      ${isRatingSet ? `: Rating ${rating}` : ""}`,
+      title: titleParts.join(" | "), // Example: "Search | MyProduct | Category: Electronics"
     };
   } else {
     return {
@@ -40,27 +49,21 @@ export async function generateMetadata(props: {
   }
 }
 
-const SearchPage = async (props: {
-  searchParams: Promise<{
-    q?: string;
-    price?: string;
-    availability?: string; // Add availability
-    sort?: string;
-    page?: string;
-  }>;
-}) => {
+// The Page component is async to fetch data, but its props are plain objects.
+const SearchPage = async ({ searchParams }: SearchPageProps) => {
+  // Destructure directly from searchParams without 'await'.
   const {
     q = "all",
     price = "all",
-    availability = "all", // Get availability from search params
+    availability = "all",
     sort = "newest",
     page = "1",
-  } = await props.searchParams;
+  } = searchParams;
 
   const productsResult = await getAllProducts({
     query: q,
     price,
-    availability, // Pass it to the action
+    availability,
     sort,
     page: Number(page),
   });
@@ -68,14 +71,13 @@ const SearchPage = async (props: {
   return (
     <div className="wrapper py-8">
       <div className="mb-8">
-        <h1 className="text-4xl font-bold">Search</h1>
+        <h1 className="text-4xl font-bold">Search here</h1>
         <p className="text-gray-600 mt-2">
           {productsResult.count} results found
           {q !== "all" && q !== "" && ` for "${q}"`}
         </p>
       </div>
 
-      {/* Use the unified filter bar here */}
       <CollectionFilterBar productCount={productsResult.count} />
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 mt-8">

@@ -1,3 +1,5 @@
+// FILE: app/(root)/product/[slug]/review-list.tsx
+
 "use client";
 
 import { useEffect } from "react";
@@ -31,16 +33,15 @@ const ReviewList = ({
   useEffect(() => {
     const loadReviews = async () => {
       const res = await getReviews({ productId });
-      setReviews(res.data);
+      setReviews(res.data as unknown as Review[]);
     };
 
     loadReviews();
   }, [productId]);
 
-  // Reload reviews after created or updated
   const reload = async () => {
     const res = await getReviews({ productId });
-    setReviews([...res.data]);
+    setReviews(res.data as unknown as Review[]);
   };
 
   return (
@@ -82,7 +83,10 @@ const ReviewList = ({
                 </div>
                 <div className="flex items-center">
                   <Calendar className="mr-1 h-3 w-3" />
-                  {formatDateTime(review.createdAt).dateTime}
+                  {/* --- THIS IS THE FINAL FIX --- */}
+                  {/* We convert the 'createdAt' string back into a Date object */}
+                  {/* right before passing it to the formatting function. */}
+                  {formatDateTime(new Date(review.createdAt)).dateTime}
                 </div>
               </div>
             </CardContent>

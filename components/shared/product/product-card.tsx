@@ -1,4 +1,4 @@
-// components/shared/product/product-card.tsx
+// FILE: components/shared/product/product-card.tsx
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Product } from "@/types";
@@ -8,23 +8,19 @@ import Rating from "./rating";
 import { Badge } from "@/components/ui/badge";
 
 const ProductCard = ({ product }: { product: Product }) => {
-  // --- 1. ADD THE "SMART" PRICE CALCULATION LOGIC HERE ---
-  // We copy this directly from your product details page.
-
   const originalPrice = Number(product.price);
 
-  // We check if a discount exists AND if the deal hasn't expired.
   const isDealActive =
+    product.discountPercentage &&
     product.discountPercentage > 0 &&
     product.discountEndDate &&
     new Date(product.discountEndDate) > new Date();
 
-  // We calculate the final price based on whether the deal is active.
-  const displayPrice = isDealActive
-    ? originalPrice * (1 - product.discountPercentage / 100)
-    : originalPrice;
-
-  // --- END OF NEW LOGIC ---
+  // --- THIS IS THE FINAL FIX ---
+  // If the deal is active, we use the discountPercentage, providing a fallback of 0
+  // to guarantee that 'discount' is always a number.
+  const discount = isDealActive ? product.discountPercentage || 0 : 0;
+  const displayPrice = originalPrice * (1 - discount / 100);
 
   return (
     <Card className="flex flex-col h-full overflow-hidden rounded-lg group border-gray-200 hover:shadow-xl transition-shadow duration-300">
@@ -47,7 +43,6 @@ const ProductCard = ({ product }: { product: Product }) => {
       </CardHeader>
       <CardContent className="p-4 flex-grow flex flex-col">
         <div className="flex-grow">
-          {/* By changing h-14 to min-h-14, the container can grow for longer titles. */}
           <CardTitle className="text-lg font-semibold tracking-tight min-h-14 leading-tight hover:text-primary transition-colors">
             <Link href={`/product/${product.slug}`}>{product.name}</Link>
           </CardTitle>
@@ -55,9 +50,6 @@ const ProductCard = ({ product }: { product: Product }) => {
             <Rating value={Number(product.rating)} />
           </div>
         </div>
-
-        {/* --- 2. UPDATE THE JSX TO DISPLAY THE PRICES --- */}
-        {/* This section will now show both prices if a deal is active. */}
         <div className="flex items-baseline gap-2 mt-4">
           {isDealActive && (
             <p className="text-gray-500 line-through">
@@ -68,7 +60,6 @@ const ProductCard = ({ product }: { product: Product }) => {
             Rs.{displayPrice.toFixed(0)}
           </p>
         </div>
-        {/* --- END OF JSX UPDATE --- */}
       </CardContent>
     </Card>
   );

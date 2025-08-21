@@ -1,18 +1,22 @@
-// components/checkout/OrderSummary.tsx
+// FILE: components/checkout/OrderSummary.tsx
 
 import { getMyCart } from "@/lib/actions/cart.actions";
 import { formatCurrency } from "@/lib/utils";
-import { Order } from "@/types";
+import { Order, OrderItem, CartItem } from "@/types"; // Import necessary types
 import Image from "next/image";
 import Link from "next/link";
 
-// This is the SVG code for a shopping cart icon. It's now part of our component.
+// Define a unified type for an item that can come from a cart or an order
+type SummaryItem = (OrderItem | CartItem) & {
+  image: string; // Ensure image is always present
+};
+
 const ShoppingCartIcon = (props: React.SVGProps<SVGSVGElement>) => (
   <svg
     xmlns="http://www.w3.org/2000/svg"
     width="24"
     height="24"
-    viewBox="0 0 24 24"
+    viewBox="0 0 24"
     fill="none"
     stroke="currentColor"
     strokeWidth="2"
@@ -27,11 +31,16 @@ const ShoppingCartIcon = (props: React.SVGProps<SVGSVGElement>) => (
 );
 
 const OrderSummary = async ({ order }: { order?: Order }) => {
-  let source;
+  let source: {
+    items: SummaryItem[];
+    itemsPrice: string;
+    shippingPrice: string;
+    totalPrice: string;
+  };
 
   if (order) {
     source = {
-      items: order.orderitems,
+      items: order.orderitems as SummaryItem[], // Cast to the unified type
       itemsPrice: order.itemsPrice,
       shippingPrice: order.shippingPrice,
       totalPrice: order.totalPrice,
@@ -42,7 +51,7 @@ const OrderSummary = async ({ order }: { order?: Order }) => {
       return null;
     }
     source = {
-      items: cart.items,
+      items: cart.items as SummaryItem[], // Cast to the unified type
       itemsPrice: cart.itemsPrice,
       shippingPrice: cart.shippingPrice,
       totalPrice: cart.totalPrice,
@@ -57,7 +66,9 @@ const OrderSummary = async ({ order }: { order?: Order }) => {
         </Link>
       </div>
       <ul role="list" className="divide-y divide-gray-200">
-        {source.items.map((item, index) => (
+        {/* --- THE FINAL FIX --- */}
+        {/* We explicitly type 'item' here to satisfy the type checker */}
+        {source.items.map((item: SummaryItem, index) => (
           <li key={index} className="flex items-center py-4">
             <div className="relative h-16 w-16 flex-shrink-0 overflow-hidden rounded-lg border">
               <Image
@@ -98,17 +109,10 @@ const OrderSummary = async ({ order }: { order?: Order }) => {
 
   return (
     <div>
-      {/* MOBILE COLLAPSIBLE SECTION */}
-      {/* <div className="hidden lg:flex justify-center mb-8">
-        <Link href="/">
-          <Image src="/images/logo.png" width={150} height={50} alt="Kuchi" />
-        </Link>
-      </div> */}
       <div className="lg:hidden bg-gray-100 border-t border-b">
         <details className="group">
           <summary className="p-4 flex justify-between items-center font-semibold cursor-pointer list-none">
             <div className="flex items-center gap-2 text-[#998B20]">
-              {/* --- We now use our safe SVG icon --- */}
               <ShoppingCartIcon className="h-5 w-5" />
               <span>Show order summary</span>
             </div>
@@ -124,8 +128,6 @@ const OrderSummary = async ({ order }: { order?: Order }) => {
           </div>
         </details>
       </div>
-
-      {/* DESKTOP-ONLY VIEW */}
       <div className="hidden lg:block">
         <SummaryContent />
       </div>
@@ -134,79 +136,3 @@ const OrderSummary = async ({ order }: { order?: Order }) => {
 };
 
 export default OrderSummary;
-
-// // components/checkout/OrderSummary.tsx
-
-// import { getMyCart } from "@/lib/actions/cart.actions";
-// import { formatCurrency } from "@/lib/utils";
-// import Image from "next/image";
-// import { redirect } from "next/navigation";
-
-// const OrderSummary = async () => {
-//   const cart = await getMyCart();
-//   if (!cart || cart.items.length === 0) {
-//     return redirect("/cart");
-//   }
-
-//   return (
-//     <div className="space-y-6">
-//       {/* --- Items List --- */}
-//       <ul role="list" className="divide-y divide-gray-200">
-//         {cart.items.map((item) => (
-//           <li key={item.slug} className="flex items-center py-4">
-//             {/* 1. The container must be `relative` for the badge to be positioned correctly. */}
-//             <div className="relative h-16 w-16 flex-shrink-0 overflow-hidden rounded-lg border border-gray-200 bg-white">
-//               <Image
-//                 src={item.image}
-//                 alt={item.name}
-//                 fill
-//                 className="object-cover object-center"
-//               />
-//               {/* 2. This is the precisely styled badge */}
-//               <span
-//                 className="absolute -top-1 -right-1 z-10 flex h-6 w-6 items-center justify-center
-//            rounded-full bg-gray-700 text-xs font-medium text-white"
-//               >
-//                 {item.qty}
-//               </span>
-//             </div>
-
-//             <div className="ml-4 flex flex-1 flex-col text-sm">
-//               <h3 className="font-medium text-gray-900">{item.name}</h3>
-//               {/* Optional: Add color/size if available */}
-//               {item.color && <p className="text-gray-500">{item.color}</p>}
-//               {/* I'm assuming you have a way to generate this */}
-//               <p className="text-gray-500 text-xs mt-1">
-//                 Estimated Delivery Time: 23/07/2025
-//               </p>
-//             </div>
-//             <p className="text-sm font-medium text-gray-900">
-//               {formatCurrency(item.price * item.qty)}
-//             </p>
-//           </li>
-//         ))}
-//       </ul>
-
-//       <div className="space-y-2 border-t border-gray-200 pt-6">
-//         <div className="flex items-center justify-between text-sm">
-//           <dt className="text-gray-600">Subtotal</dt>
-//           <dd className="font-medium text-gray-900">
-//             {formatCurrency(cart.itemsPrice)}
-//           </dd>
-//         </div>
-//         <div className="flex items-center justify-between text-sm">
-//           <dt className="text-gray-600">Shipping</dt>
-//           <dd className="font-medium text-gray-900">
-//             {formatCurrency(cart.shippingPrice)}
-//           </dd>
-//         </div>
-//         <div className="flex items-center justify-between border-t border-gray-200 pt-4 text-lg font-semibold">
-//           <dt className="text-gray-900">Total</dt>
-//           <dd className="text-gray-900">{formatCurrency(cart.totalPrice)}</dd>
-//         </div>
-//       </div>
-//     </div>
-//   );
-// };
-
-// export default OrderSummary;

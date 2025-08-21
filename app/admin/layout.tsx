@@ -1,16 +1,26 @@
+// FILE: app/admin/layout.tsx
+
 import { APP_NAME } from "@/lib/constants";
 import Image from "next/image";
 import Link from "next/link";
 import Menu from "@/components/shared/header/menu";
 import MainNav from "./main-nav";
-// import { Input } from "@/components/ui/input";
 import AdminSearch from "@/components/admin/admin-search";
+// --- 1. Import the action to get the cart ---
+import { getMyCart } from "@/lib/actions/cart.actions";
 
-export default function AdminLayout({
+// --- 2. Convert the layout to an async function ---
+export default async function AdminLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  // --- 3. Fetch the cart data on the server ---
+  const cart = await getMyCart();
+
+  // --- 4. Calculate the item count safely ---
+  const cartItemCount = cart?.items.length || 0;
+
   return (
     <>
       <div className="flex flex-col">
@@ -27,7 +37,8 @@ export default function AdminLayout({
             <MainNav className="mx-6" />
             <div className="ml-auto items-center flex space-x-4">
               <AdminSearch />
-              <Menu />
+              {/* --- 5. Pass the count prop to the Menu component --- */}
+              <Menu count={cartItemCount} />
             </div>
           </div>
         </div>

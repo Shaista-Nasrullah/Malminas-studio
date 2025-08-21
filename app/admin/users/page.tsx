@@ -1,3 +1,5 @@
+// FILE: app/admin/users/page.tsx
+
 import { Metadata } from "next";
 import { getAllUsers, deleteUser } from "@/lib/actions/user.actions";
 import {
@@ -15,20 +17,23 @@ import Pagination from "@/components/shared/pagination";
 import { Badge } from "@/components/ui/badge";
 import DeleteDialog from "@/components/shared/delete-dialog";
 import { requireAdmin } from "@/lib/auth-guard";
+// --- 1. IMPORT THE TYPE ---
+// The User type from Prisma Client is perfect for this server page
+import { User } from "@prisma/client";
 
 export const metadata: Metadata = {
   title: "Admin Users",
 };
 
-const AdminUserPage = async (props: {
-  searchParams: Promise<{
-    page: string;
-    query: string;
-  }>;
+// --- CORRECTED ---: Props are a plain object
+const AdminUserPage = async ({
+  searchParams,
+}: {
+  searchParams: { page?: string; query?: string };
 }) => {
   await requireAdmin();
 
-  const { page = "1", query: searchText } = await props.searchParams;
+  const { page = "1", query: searchText = "" } = searchParams;
 
   const users = await getAllUsers({ page: Number(page), query: searchText });
 
@@ -39,7 +44,7 @@ const AdminUserPage = async (props: {
         {searchText && (
           <div>
             Filtered by <i>&quot;{searchText}&quot;</i>{" "}
-            <Link href="/admin/users" legacyBehavior>
+            <Link href="/admin/users">
               <Button variant="outline" size="sm">
                 Remove Filter
               </Button>
@@ -59,7 +64,9 @@ const AdminUserPage = async (props: {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {users.data.map((user) => (
+            {/* --- 2. THIS IS THE FINAL FIX --- */}
+            {/* We explicitly tell TypeScript the type of the 'user' variable. */}
+            {users.data.map((user: User) => (
               <TableRow key={user.id}>
                 <TableCell>{formatId(user.id)}</TableCell>
                 <TableCell>{user.name}</TableCell>

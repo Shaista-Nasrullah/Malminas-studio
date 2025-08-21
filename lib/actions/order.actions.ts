@@ -4,9 +4,9 @@
 
 import { auth } from "@/auth";
 import { getMyCart } from "./cart.actions";
-import { insertOrderSchema, placeOrderSchema } from "../validators"; // MODIFIED IMPORT
+import { insertOrderSchema, placeOrderSchema } from "../validators";
 import { prisma } from "@/db/prisma";
-import { ShippingAddress } from "@/types";
+import { Order, ShippingAddress } from "@/types"; // Import Order type
 import { convertToPlainObject, formatError } from "../utils";
 import { PAGE_SIZE } from "../constants";
 import { Prisma } from "@prisma/client";
@@ -15,17 +15,13 @@ import { sendPurchaseReceipt } from "@/email";
 import { cookies } from "next/headers";
 import z from "zod";
 
-// --- DELETED: All local schema definitions have been removed ---
-
 export const placeOrder = async (
-  // MODIFIED: Use the new, imported schema for type inference
   formData: z.infer<typeof placeOrderSchema>
 ) => {
   try {
     let userId: string;
     const session = await auth();
 
-    // --- 1. USER HANDLING ---
     if (session?.user?.id) {
       userId = session.user.id;
     } else {
@@ -44,7 +40,6 @@ export const placeOrder = async (
       userId = newUser.id;
     }
 
-    // --- 2. CART HANDLING ---
     const cart = await getMyCart();
     if (!cart || cart.items.length === 0) {
       throw new Error(
@@ -52,7 +47,6 @@ export const placeOrder = async (
       );
     }
 
-    // --- 3. VALIDATION & ORDER CREATION IN A TRANSACTION ---
     const orderDataToValidate = {
       userId,
       shippingAddress: {
@@ -88,7 +82,6 @@ export const placeOrder = async (
           },
         },
       });
-
       await tx.user.update({
         where: { id: userId },
         data: {
@@ -96,12 +89,10 @@ export const placeOrder = async (
           paymentMethod: validatedOrder.paymentMethod,
         },
       });
-
       await tx.cart.delete({ where: { id: cart.id } });
       return order;
     });
 
-    // --- SEND PURCHASE RECEIPT EMAIL ---
     try {
       const fullOrderForEmail = await prisma.order.findUnique({
         where: { id: newOrder.id },
@@ -112,13 +103,28 @@ export const placeOrder = async (
       });
 
       if (fullOrderForEmail) {
-        await sendPurchaseReceipt({
-          order: {
-            ...fullOrderForEmail,
-            shippingAddress:
-              fullOrderForEmail.shippingAddress as ShippingAddress,
-          },
-        });
+        // --- THIS IS THE FINAL FIX ---
+        // We manually convert all fields to match the global 'Order' type
+        const formattedOrderForEmail: Order = {
+          ...fullOrderForEmail,
+          itemsPrice: fullOrderForEmail.itemsPrice.toString(),
+          shippingPrice: fullOrderForEmail.shippingPrice.toString(),
+          taxPrice: fullOrderForEmail.taxPrice.toString(),
+          totalPrice: fullOrderForEmail.totalPrice.toString(),
+          createdAt: fullOrderForEmail.createdAt.toISOString(),
+          paidAt: fullOrderForEmail.paidAt
+            ? fullOrderForEmail.paidAt.toISOString()
+            : null,
+          deliveredAt: fullOrderForEmail.deliveredAt
+            ? fullOrderForEmail.deliveredAt.toISOString()
+            : null,
+          shippingAddress: fullOrderForEmail.shippingAddress as ShippingAddress,
+          orderitems: fullOrderForEmail.orderitems.map((item) => ({
+            ...item,
+            price: item.price.toString(),
+          })),
+        };
+        await sendPurchaseReceipt({ order: formattedOrderForEmail });
       } else {
         console.error(
           `Failed to fetch order details for email (ID: ${newOrder.id})`
@@ -131,8 +137,7 @@ export const placeOrder = async (
       );
     }
 
-    // --- 4. CLEANUP AND SUCCESS RESPONSE ---
-    (await cookies()).set("sessionCartId", "", { maxAge: -1 });
+    cookies().set("sessionCartId", "", { maxAge: -1 });
     revalidatePath("/my-orders");
     return {
       success: true,
@@ -146,6 +151,8 @@ export const placeOrder = async (
     };
   }
 };
+
+// ... ALL OTHER FUNCTIONS IN THIS FILE ARE CORRECT AND DO NOT NEED TO BE CHANGED ...
 
 export async function getOrderById(orderId: string) {
   const data = await prisma.order.findFirst({
@@ -161,7 +168,6 @@ export async function getOrderById(orderId: string) {
   return convertToPlainObject(data);
 }
 
-// Get user's orders
 export async function getMyOrders({
   limit = PAGE_SIZE,
   page,
@@ -194,7 +200,6 @@ type SalesDataType = {
   totalSales: number;
 }[];
 
-// Get sales data and order summary
 export async function getOrderSummary() {
   const ordersCount = await prisma.order.count();
   const productsCount = await prisma.product.count();
@@ -231,7 +236,6 @@ export async function getOrderSummary() {
   };
 }
 
-// Get all orders
 export async function getAllOrders({
   limit = PAGE_SIZE,
   page,
@@ -271,50 +275,26 @@ export async function getAllOrders({
   };
 }
 
-// Delete an order
 export async function deleteOrder(id: string) {
   try {
     await prisma.order.delete({ where: { id } });
-
     revalidatePath("/admin/orders");
-
-    return {
-      success: true,
-      message: "Order deleted successfully",
-    };
+    return { success: true, message: "Order deleted successfully" };
   } catch (error) {
     return { success: false, message: formatError(error) };
   }
 }
 
-// Update COD order to paid
 export async function updateOrderToPaidCOD(orderId: string) {
-  console.log(
-    `--- [SERVER ACTION] updateOrderToPaidCOD called for orderId: ${orderId} ---`
-  );
-
   try {
-    console.log("[1] Fetching order from database...");
     const order = await prisma.order.findFirst({
-      where: {
-        id: orderId,
-      },
+      where: { id: orderId },
     });
-
-    console.log(`[2] Order fetched. Found: ${!!order}`);
     if (!order) throw new Error("Order not found");
-
-    console.log("[3] Updating order to isPaid: true...");
     await prisma.order.update({
       where: { id: orderId },
-      data: {
-        isPaid: true,
-        paidAt: new Date(),
-      },
+      data: { isPaid: true, paidAt: new Date() },
     });
-    console.log("[4] Order updated successfully.");
-
-    console.log("[5] Fetching full order details for email...");
     const updatedOrderForEmail = await prisma.order.findUnique({
       where: { id: orderId },
       include: {
@@ -322,65 +302,51 @@ export async function updateOrderToPaidCOD(orderId: string) {
         user: { select: { name: true, email: true } },
       },
     });
-
     if (!updatedOrderForEmail) {
       throw new Error("Failed to retrieve updated order details for email.");
     }
-    console.log(
-      `[6] Full order details fetched. Sending email to: ${updatedOrderForEmail.user.email}`
-    );
-
-    console.log("[7] Attempting to send purchase receipt...");
-    sendPurchaseReceipt({
-      order: {
-        ...updatedOrderForEmail,
-        shippingAddress:
-          updatedOrderForEmail.shippingAddress as ShippingAddress,
-      },
-    });
-    console.log("[8] sendPurchaseReceipt function called.");
-
-    revalidatePath(`/order/${orderId}`);
-
-    return {
-      success: true,
-      message: "Order has been marked paid",
+    const formattedOrder: Order = {
+      ...updatedOrderForEmail,
+      itemsPrice: updatedOrderForEmail.itemsPrice.toString(),
+      shippingPrice: updatedOrderForEmail.shippingPrice.toString(),
+      taxPrice: updatedOrderForEmail.taxPrice.toString(),
+      totalPrice: updatedOrderForEmail.totalPrice.toString(),
+      createdAt: updatedOrderForEmail.createdAt.toISOString(),
+      paidAt: updatedOrderForEmail.paidAt
+        ? updatedOrderForEmail.paidAt.toISOString()
+        : null,
+      deliveredAt: updatedOrderForEmail.deliveredAt
+        ? updatedOrderForEmail.deliveredAt.toISOString()
+        : null,
+      shippingAddress: updatedOrderForEmail.shippingAddress as ShippingAddress,
+      orderitems: updatedOrderForEmail.orderitems.map((item) => ({
+        ...item,
+        price: item.price.toString(),
+      })),
     };
+    sendPurchaseReceipt({
+      order: formattedOrder,
+    });
+    revalidatePath(`/order/${orderId}`);
+    return { success: true, message: "Order has been marked paid" };
   } catch (error) {
-    console.error(
-      "--- [SERVER ACTION ERROR] in updateOrderToPaidCOD ---",
-      error
-    );
     return { success: false, message: formatError(error) };
   }
 }
 
-// Update COD order to delivered
 export async function deliverOrder(orderId: string) {
   try {
     const order = await prisma.order.findFirst({
-      where: {
-        id: orderId,
-      },
+      where: { id: orderId },
     });
-
     if (!order) throw new Error("Order not found");
     if (!order.isPaid) throw new Error("Order is not paid");
-
     await prisma.order.update({
       where: { id: orderId },
-      data: {
-        isDelivered: true,
-        deliveredAt: new Date(),
-      },
+      data: { isDelivered: true, deliveredAt: new Date() },
     });
-
     revalidatePath(`/order/${orderId}`);
-
-    return {
-      success: true,
-      message: "Order has been marked delivered",
-    };
+    return { success: true, message: "Order has been marked delivered" };
   } catch (error) {
     return { success: false, message: formatError(error) };
   }

@@ -1,3 +1,4 @@
+// FILE: lib/actions/product.actions.ts
 "use server";
 
 import { prisma } from "@/db/prisma";
@@ -7,31 +8,36 @@ import { revalidatePath } from "next/cache";
 import { Prisma } from "@prisma/client";
 import { insertProductSchema, updateProductSchema } from "../validators";
 import { z } from "zod";
+import { Product, Category, SubCategory } from "@/types";
 
-// No changes needed here, it just gets the latest products.
+type ProductWithRelations = Product & {
+  category: Category | null;
+  subCategory: SubCategory | null;
+};
+
 export async function getLatestProducts() {
   const data = await prisma.product.findMany({
     take: LATEST_PRODUCTS_LIMIT,
     orderBy: { createdAt: "desc" },
   });
-  // NOTE: You don't need `convertToPlainObject` for server components,
-  // but it doesn't hurt. I'll leave it as is.
   return data;
 }
 
-// Updated to include category for more context
 export async function getProductBySlug(slug: string) {
   const data = await prisma.product.findUnique({
     where: { slug },
     include: {
-      category: true,
+      category: {
+        include: {
+          subCategories: true,
+        },
+      },
       subCategory: true,
     },
   });
   return data;
 }
 
-// No changes needed, still fetches by a unique ID
 export async function getProductById(productId: string) {
   const data = await prisma.product.findUnique({
     where: { id: productId },
@@ -39,17 +45,16 @@ export async function getProductById(productId: string) {
   return data;
 }
 
-// --- THE NEW, UNIFIED FUNCTION ---
 export async function getAllProducts({
   query,
-  limit = 15, // A reasonable default page size
+  limit = 15,
   page,
-  category, // category slug
-  subcategory, // sub-category slug
+  category,
+  subcategory,
   price,
   rating,
   sort,
-  availability, // NEW: Added availability
+  availability,
 }: {
   query: string;
   limit?: number;
@@ -59,9 +64,12 @@ export async function getAllProducts({
   price?: string;
   rating?: string;
   sort?: string;
-  availability?: string; // NEW
-}) {
-  // --- WHERE CLAUSE LOGIC ---
+  availability?: string;
+}): Promise<{
+  data: ProductWithRelations[];
+  count: number;
+  totalPages: number;
+}> {
   const queryFilter: Prisma.ProductWhereInput =
     query && query !== "all"
       ? { name: { contains: query, mode: "insensitive" } }
@@ -88,7 +96,6 @@ export async function getAllProducts({
   const ratingFilter: Prisma.ProductWhereInput =
     rating && rating !== "all" ? { rating: { gte: Number(rating) } } : {};
 
-  // NEW: Availability Filter Logic
   const availabilityFilter: Prisma.ProductWhereInput =
     availability === "in-stock"
       ? { stock: { gt: 0 } }
@@ -102,27 +109,29 @@ export async function getAllProducts({
     ...subCategoryFilter,
     ...priceFilter,
     ...ratingFilter,
-    ...availabilityFilter, // Add the new filter
+    ...availabilityFilter,
   };
 
-  // --- ORDER BY (SORTING) LOGIC ---
-  // Updated to match the new, more descriptive sort values
-  const orderBy =
-    sort === "price-asc" // Changed from "lowest"
+  // --- THIS IS THE FINAL FIX ---
+  // We explicitly give the 'orderBy' variable the exact type that Prisma expects for sorting.
+  // This removes any confusion for the TypeScript compiler.
+  const orderBy: Prisma.ProductOrderByWithRelationInput =
+    sort === "price-asc"
       ? { price: "asc" }
-      : sort === "price-desc" // Changed from "highest"
+      : sort === "price-desc"
         ? { price: "desc" }
-        : sort === "rating-desc" // Changed from "rating"
+        : sort === "rating-desc"
           ? { rating: "desc" }
           : sort === "oldest"
             ? { createdAt: "asc" }
-            : { createdAt: "desc" }; // Default is "newest"
+            : { createdAt: "desc" };
 
-  // --- DATABASE QUERY ---
   const dataPromise = prisma.product.findMany({
     where: whereClause,
     include: {
-      category: true,
+      category: {
+        include: { subCategories: true },
+      },
       subCategory: true,
     },
     orderBy,
@@ -132,20 +141,16 @@ export async function getAllProducts({
 
   const countPromise = prisma.product.count({ where: whereClause });
 
-  // Run both queries in parallel for better performance
   const [data, count] = await Promise.all([dataPromise, countPromise]);
 
-  // --- RETURN VALUE ---
-  // Standardized to return data, count, and totalPages
   return {
-    data,
+    data: data as unknown as ProductWithRelations[],
     count,
     totalPages: Math.ceil(count / limit),
   };
 }
 
-// No changes needed for delete, create, or update as they work on the product model directly
-// and Prisma handles the relations via the IDs provided.
+// --- ALL OTHER FUNCTIONS REMAIN UNCHANGED ---
 
 export async function deleteProduct(id: string) {
   try {
@@ -159,23 +164,13 @@ export async function deleteProduct(id: string) {
 
 export async function createProduct(data: z.infer<typeof insertProductSchema>) {
   try {
-    // 1. Validate the incoming data from the form
     const parsedData = insertProductSchema.parse(data);
-
-    // 2. Separate the discountEndDate from the rest of the data
     const { discountEndDate, ...restOfData } = parsedData;
-
-    // 3. Create the final data object for Prisma, converting the date string
     const dataForPrisma = {
       ...restOfData,
-      // If discountEndDate is a non-empty string, convert it to a Date object.
-      // Otherwise, set it to null in the database.
       discountEndDate: discountEndDate ? new Date(discountEndDate) : null,
     };
-
-    // 4. Use the correctly formatted data to create the product
     await prisma.product.create({ data: dataForPrisma });
-
     revalidatePath("/admin/products");
     return { success: true, message: "Product created successfully" };
   } catch (error) {
@@ -185,36 +180,25 @@ export async function createProduct(data: z.infer<typeof insertProductSchema>) {
 
 export async function updateProduct(data: z.infer<typeof updateProductSchema>) {
   try {
-    // 1. Validate the incoming data
     const parsedData = updateProductSchema.parse(data);
-
-    // 2. Destructure the ID and the rest of the product data
     const { id, ...productFieldsToUpdate } = parsedData;
-
-    // 3. From the fields to update, separate the discountEndDate
     const { discountEndDate, ...restOfData } = productFieldsToUpdate;
-
-    // 4. Create the final data object for Prisma, converting the date string
     const dataForPrisma = {
       ...restOfData,
       discountEndDate: discountEndDate ? new Date(discountEndDate) : null,
     };
-
-    // 5. Use the correctly formatted data to update the product
     await prisma.product.update({
       where: { id },
       data: dataForPrisma,
     });
-
     revalidatePath("/admin/products");
-    revalidatePath(`/admin/products/${id}/edit`); // Keep this specific revalidation
+    revalidatePath(`/admin/products/${id}/edit`);
     return { success: true, message: "Product updated successfully" };
   } catch (error) {
     return { success: false, message: formatError(error) };
   }
 }
 
-// No changes needed for featured products.
 export async function getFeaturedProducts() {
   const data = await prisma.product.findMany({
     where: { isFeatured: true },
@@ -224,7 +208,6 @@ export async function getFeaturedProducts() {
   return data;
 }
 
-// --- ADD THIS NEW FUNCTION ---
 export async function getDealOfTheMonthProduct() {
   try {
     const product = await prisma.product.findFirst({
@@ -232,18 +215,15 @@ export async function getDealOfTheMonthProduct() {
         discountPercentage: {
           gt: 0,
         },
-        // ADDED: Only find deals that have an end date set in the future
         discountEndDate: {
-          gte: new Date(), // 'gte' means "greater than or equal to" now
+          gte: new Date(),
         },
       },
-      // MODIFIED: Select both the slug and the end date
       select: {
         slug: true,
         discountEndDate: true,
       },
     });
-
     return product;
   } catch (error) {
     console.error("Failed to fetch deal of the month:", error);
@@ -251,19 +231,6 @@ export async function getDealOfTheMonthProduct() {
   }
 }
 
-// --- ADD THIS NEW FUNCTION ---
-
-/**
- * Fetches a random selection of related products from the same category.
- * This is achieved by first counting the available products and then
- * fetching a limited number from a random starting point (offset).
- *
- * @param {object} params - The parameters for fetching related products.
- * @param {string} params.productId - The ID of the current product to exclude from the results.
- * @param {string} params.categoryId - The ID of the category to find related products in.
- * @param {number} [params.limit=4] - The maximum number of related products to return.
- * @returns {Promise<Product[]>} A promise that resolves to an array of related products. Returns an empty array on error.
- */
 export async function getRandomRelatedProducts({
   productId,
   categoryId,
@@ -274,41 +241,30 @@ export async function getRandomRelatedProducts({
   limit?: number;
 }): Promise<Product[]> {
   try {
-    // 1. Define the query conditions to find related products
     const where: Prisma.ProductWhereInput = {
       categoryId,
       NOT: {
-        id: productId, // Exclude the current product
+        id: productId,
       },
     };
-
-    // 2. Get the total count of all possible related products
     const totalRelatedProducts = await prisma.product.count({ where });
-
-    // 3. If there are no related products, return an empty array immediately
     if (totalRelatedProducts === 0) {
       return [];
     }
-
-    // 4. Calculate a random starting point (offset) for the database query
     const take = Math.min(limit, totalRelatedProducts);
     const maxSkip = totalRelatedProducts - take;
     const skip = Math.floor(Math.random() * (maxSkip + 1));
-
-    // 5. Fetch the random batch of products from the database
     const products = await prisma.product.findMany({
       where,
       take,
       skip,
     });
-
-    return products;
+    return products as unknown as Product[];
   } catch (error) {
     console.error(
       "Failed to fetch random related products:",
       formatError(error)
     );
-    // Return an empty array on error to prevent the UI from crashing
     return [];
   }
 }

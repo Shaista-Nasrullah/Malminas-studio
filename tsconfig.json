@@ -1,7 +1,11 @@
 {
   "compilerOptions": {
     "target": "es5", // Changed to es5 for better browser compatibility, nextjs will handle modern syntax
-    "lib": ["dom", "dom.iterable", "esnext"],
+    "lib": [
+      "dom",
+      "dom.iterable",
+      "esnext"
+    ],
     "allowJs": true,
     "skipLibCheck": true,
     "strict": true,
@@ -20,14 +24,18 @@
       }
     ],
     "paths": {
-      "@/*": ["./*"]
+      "@/*": [
+        "./*"
+      ]
     }
   },
   "include": [
-    "next-env.d.ts",
     "**/*.ts",
     "**/*.tsx",
+    "next-env.d.ts",
     ".next/types/**/*.ts"
-  ],
-  "exclude": ["node_modules"]
+, "next.config.js"  ],
+  "exclude": [
+    "node_modules"
+  ]
 }

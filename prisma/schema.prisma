@@ -3,10 +3,14 @@ generator client {
   previewFeatures = ["driverAdapters"]
 }
 
+// FILE: prisma/schema.prisma
 datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DATABASE_URL_UNPOOLED")
 }
+
+// ... rest of your schema (model User, model Product, etc.)
 
 model Product {
   id                 String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid

@@ -1,3 +1,5 @@
+// FILE: app/admin/categories/page.tsx
+
 import Link from "next/link";
 import {
   deleteCategory,
@@ -16,6 +18,18 @@ import {
 import DeleteDialog from "@/components/shared/delete-dialog";
 import { requireAdmin } from "@/lib/auth-guard";
 import { Metadata } from "next";
+
+// --- 1. IMPORT THE TYPE ---
+// We need a type for the data returned by the admin action.
+// Let's create a simple one here for now.
+type AdminCategory = {
+  id: string;
+  name: string;
+  createdAt: Date; // It's a Date object on the server
+  _count: {
+    subCategories: number;
+  };
+};
 
 export const metadata: Metadata = {
   title: "Admin Categories",
@@ -53,7 +67,9 @@ const AdminCategoriesPage = async () => {
               </TableCell>
             </TableRow>
           )}
-          {categories.map((category) => (
+          {/* --- 2. THIS IS THE FINAL FIX --- */}
+          {/* We explicitly tell TypeScript the type of the 'category' variable. */}
+          {categories.map((category: AdminCategory) => (
             <TableRow key={category.id}>
               <TableCell>{formatId(category.id)}</TableCell>
               <TableCell className="font-medium">{category.name}</TableCell>

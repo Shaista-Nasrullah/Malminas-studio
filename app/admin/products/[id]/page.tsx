@@ -1,29 +1,41 @@
+// FILE: app/admin/products/[id]/page.tsx
+
 import ProductForm from "@/components/admin/product-form";
 import { getProductById } from "@/lib/actions/prodct.actions";
 import { getCategoriesForNavigation } from "@/lib/actions/category.actions";
 import { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { requireAdmin } from "@/lib/auth-guard";
+import { Category, SubCategory } from "@/types";
+
+type RawCategory = Omit<Category, "createdAt" | "subCategories" | "images"> & {
+  createdAt: Date;
+  images: string[];
+  subCategories: (Omit<SubCategory, "createdAt"> & { createdAt: Date })[];
+};
 
 export const metadata: Metadata = {
   title: "Update Product",
 };
 
-// Helper function to format an ISO date STRING for the form input
 const formatDateForInput = (dateString: string | null): string => {
   if (!dateString) return "";
-  return dateString.slice(0, 16);
+  try {
+    return dateString.slice(0, 16);
+  } catch (e) {
+    return "";
+  }
 };
 
-const AdminProductUpdatePage = async (props: {
-  params: Promise<{ id: string }>;
+const AdminProductUpdatePage = async ({
+  params,
+}: {
+  params: { id: string };
 }) => {
-  // --- FIX #1: Await the params object ---
-  const { id } = await props.params;
-
+  const { id } = params;
   await requireAdmin();
 
-  const [rawProduct, rawCategories] = await Promise.all([
+  const [rawProduct, serverCategories] = await Promise.all([
     getProductById(id),
     getCategoriesForNavigation(),
   ]);
@@ -32,8 +44,8 @@ const AdminProductUpdatePage = async (props: {
     return notFound();
   }
 
-  // --- FIX #2: Manually build a guaranteed-plain product object ---
-  // This is the most robust way to ensure no complex objects are passed.
+  const rawCategories = serverCategories as unknown as RawCategory[];
+
   const serializableProduct = {
     id: rawProduct.id,
     name: rawProduct.name,
@@ -42,29 +54,36 @@ const AdminProductUpdatePage = async (props: {
     brand: rawProduct.brand,
     description: rawProduct.description,
     stock: rawProduct.stock,
-    price: String(rawProduct.price), // Ensure it's a string
-    rating: String(rawProduct.rating), // Ensure it's a string
+    price: String(rawProduct.price),
+    rating: String(rawProduct.rating),
     discountPercentage: rawProduct.discountPercentage,
     isFeatured: rawProduct.isFeatured,
     banner: rawProduct.banner,
     categoryId: rawProduct.categoryId,
     subCategoryId: rawProduct.subCategoryId,
     discountEndDate: formatDateForInput(
-      rawProduct.discountEndDate ? String(rawProduct.discountEndDate) : null
+      rawProduct.discountEndDate
+        ? rawProduct.discountEndDate.toISOString()
+        : null
     ),
+    numReviews: rawProduct.numReviews,
+    // --- THIS IS THE FINAL FIX ---
+    // We convert the 'createdAt' Date object to a string to match the client-side type.
+    createdAt: rawProduct.createdAt.toISOString(),
   };
 
-  // --- FIX #2 (cont.): Manually serialize the categories as well ---
   const serializableCategories = rawCategories.map((category) => ({
     id: category.id,
     name: category.name,
     slug: category.slug,
     images: category.images,
+    createdAt: category.createdAt.toISOString(),
     subCategories: category.subCategories.map((sub) => ({
       id: sub.id,
       name: sub.name,
       slug: sub.slug,
-      images: sub.images,
+      createdAt: sub.createdAt.toISOString(),
+      categoryId: sub.categoryId,
     })),
   }));
 

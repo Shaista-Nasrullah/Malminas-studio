@@ -1,15 +1,14 @@
+// FILE: components/footer.tsx
+
 import { getFooterCategories } from "@/lib/actions/category.actions";
-import {
-  ArrowRight,
-  Facebook,
-  Instagram,
-  Youtube,
-  // Using more appropriate icons from react-icons
-} from "lucide-react";
+import { ArrowRight, Facebook, Instagram, Youtube } from "lucide-react";
 import { FaTiktok, FaPinterest } from "react-icons/fa";
 import Image from "next/image";
 import Link from "next/link";
 import { COPYRIGHT_HOLDER } from "@/lib/constants";
+// --- 1. IMPORT THE TYPE ---
+// We only need a simple version of the Category type for the footer
+import { Category } from "@/types";
 
 const Footer = async () => {
   const categories = await getFooterCategories();
@@ -32,7 +31,6 @@ const Footer = async () => {
     <footer className="text-white/80" style={{ backgroundColor: "#998B20" }}>
       <div className="wrapper mx-auto px-4 pt-16 pb-8">
         <div className="grid grid-cols-1 gap-12 md:grid-cols-2 lg:grid-cols-4">
-          {/* --- Column 1: Brand Story & Subscribe --- */}
           <div className="space-y-6">
             <Link href="/">
               <Image
@@ -42,7 +40,6 @@ const Footer = async () => {
                 height={220}
               />
             </Link>
-            {/* HIGHLIGHT: Replaced generic text with a brand mission statement */}
             <h3 className="text-lg font-bold text-white">
               Weaving Heritage into Every Thread
             </h3>
@@ -52,7 +49,6 @@ const Footer = async () => {
               collection is a testament to skillful hands and rich cultural
               heritage.
             </p>
-            {/* Using a mix of icons for better brand representation */}
             <div className="flex space-x-4">
               <Link href="#" aria-label="Facebook">
                 <Facebook size={20} />
@@ -70,7 +66,6 @@ const Footer = async () => {
                 <FaPinterest size={20} />
               </Link>
             </div>
-            {/* HIGHLIGHT: Changed the subscription call-to-action to be more thematic */}
             <h3 className="text-lg font-bold text-white pt-4">
               Follow the Thread of Tradition
             </h3>
@@ -90,12 +85,10 @@ const Footer = async () => {
             </form>
           </div>
 
-          {/* --- Column 2: Useful Links --- */}
           <div className="space-y-6">
             <h3 className="text-lg font-bold text-white">Useful Links</h3>
             <ul className="space-y-3">
               <FooterLink href="/search">Search</FooterLink>
-              {/* HIGHLIGHT: Changed "About Us" to "Our Story" to better fit the brand narrative */}
               <FooterLink href="/pages/about-us">About Us</FooterLink>
               <FooterLink href="/pages/shipping-policy">
                 Shipping Policy
@@ -113,11 +106,12 @@ const Footer = async () => {
             </ul>
           </div>
 
-          {/* --- Column 3: Categories (Dynamic) --- */}
           <div className="space-y-6">
             <h3 className="text-lg font-bold text-white">Categories</h3>
             <ul className="space-y-3">
-              {categories.map((category) => (
+              {/* --- 2. THIS IS THE FINAL FIX --- */}
+              {/* We explicitly tell TypeScript the type of the 'category' variable. */}
+              {categories.map((category: Pick<Category, "slug" | "name">) => (
                 <FooterLink
                   key={category.slug}
                   href={`/collections/${category.slug}`}
@@ -128,7 +122,6 @@ const Footer = async () => {
             </ul>
           </div>
 
-          {/* --- Column 4: Contact --- */}
           <div className="space-y-6">
             <h3 className="text-lg font-bold text-white">Contact</h3>
             <div className="space-y-3 text-sm">
@@ -146,7 +139,6 @@ const Footer = async () => {
           </div>
         </div>
 
-        {/* --- Bottom Bar --- */}
         <div className="mt-16 pt-8 border-t border-white/20 flex flex-col sm:flex-row items-center justify-between text-sm space-y-4 sm:space-y-0">
           <p>
             © {new Date().getFullYear()}, {COPYRIGHT_HOLDER} All rights

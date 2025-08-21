@@ -1,4 +1,4 @@
-// app/(root)/product/[slug]/page.tsx
+// FILE: app/(root)/product/[slug]/page.tsx
 
 import {
   getProductBySlug,
@@ -11,16 +11,16 @@ import { Metadata } from "next";
 import ProductCard from "@/components/shared/product/product-card";
 import ProductDetailsClient from "./product-details-client";
 import { convertToPlainObject } from "@/lib/utils";
+import { Product } from "@/types";
 
-// --- 1. IMPORT THE 'Product' TYPE FROM PRISMA ---
-// This gives us a proper type to use instead of 'any'.
-import { Product } from "@prisma/client";
-
-export async function generateMetadata(props: {
-  params: Promise<{ slug: string }>;
+export async function generateMetadata({
+  params,
+}: {
+  params: { slug: string };
 }): Promise<Metadata> {
-  const { slug } = await props.params;
+  const { slug } = params;
   const productData = await getProductBySlug(slug);
+
   if (!productData) {
     return { title: "Product Not Found" };
   }
@@ -35,32 +35,37 @@ export async function generateMetadata(props: {
   };
 }
 
-const ProductDetailsPage = async (props: {
-  params: Promise<{ slug: string }>;
-}) => {
-  const { slug } = await props.params;
+const ProductDetailsPage = async ({ params }: { params: { slug: string } }) => {
+  const { slug } = params;
   const rawProduct = await getProductBySlug(slug);
 
   if (!rawProduct) {
     notFound();
   }
 
-  const [rawCart, relatedProducts] = await Promise.all([
+  const product = convertToPlainObject(rawProduct) as unknown as Product;
+
+  const [rawCart, rawRelatedProducts] = await Promise.all([
     getMyCart(),
     getRandomRelatedProducts({
-      productId: rawProduct.id,
-      categoryId: rawProduct.categoryId,
-      limit: 4,
+      productId: product.id,
+      categoryId: product.categoryId,
     }),
   ]);
 
-  const product = convertToPlainObject(rawProduct);
   const cart = rawCart ? convertToPlainObject(rawCart) : null;
+  const relatedProducts = convertToPlainObject(
+    rawRelatedProducts
+  ) as unknown as Product[];
 
-  const isDealInitiallyActive =
+  // --- THIS IS THE FINAL FIX ---
+  // We wrap the entire expression in `!!` to guarantee the result is a true boolean.
+  const isDealInitiallyActive = !!(
+    product.discountPercentage &&
     product.discountPercentage > 0 &&
     product.discountEndDate &&
-    new Date(product.discountEndDate) > new Date();
+    new Date(product.discountEndDate) > new Date()
+  );
 
   const session = await auth();
   const userId = session?.user?.id;
@@ -76,19 +81,14 @@ const ProductDetailsPage = async (props: {
         />
       </section>
 
-      {/* Related Products Section */}
       {relatedProducts && relatedProducts.length > 0 && (
         <section className="wrapper my-12">
           <h2 className="h2-bold mb-6 text-center md:text-left">
             You Might Also Like
           </h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-            {/*
-              --- 2. THE FIX: Replace 'any' with the imported 'Product' type ---
-              This resolves the 'no-explicit-any' build error.
-            */}
-            {relatedProducts.map((p: Product) => (
-              <ProductCard key={p.id} product={convertToPlainObject(p)} />
+            {relatedProducts.map((p) => (
+              <ProductCard key={p.id} product={p} />
             ))}
           </div>
         </section>

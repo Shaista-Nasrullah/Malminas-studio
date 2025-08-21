@@ -1,3 +1,5 @@
+// FILE: components/admin/category-form.tsx
+
 "use client";
 
 import { toast } from "sonner";
@@ -26,7 +28,7 @@ import {
   createCategoryWithSubCategories,
   updateCategoryWithSubCategories,
 } from "@/lib/actions/category.actions";
-import { Trash, X } from "lucide-react"; // <-- IMPORT X ICON
+import { Trash, X } from "lucide-react";
 
 const CategoryForm = ({
   type,
@@ -49,7 +51,6 @@ const CategoryForm = ({
     name: "subCategories",
   });
 
-  // NEW: Handler to delete an image from the form state
   const handleImageDelete = (imageUrl: string) => {
     const currentImages = form.getValues("images") || [];
     const updatedImages = currentImages.filter((img) => img !== imageUrl);
@@ -142,8 +143,6 @@ const CategoryForm = ({
                 )}
               />
             </div>
-
-            {/* --- UPDATED IMAGES FIELD --- */}
             <FormField
               control={form.control}
               name="images"
@@ -185,7 +184,12 @@ const CategoryForm = ({
                               toast.success("Image(s) uploaded.");
                             }
                           }}
-                          onUploadError={(error) => toast.error(error.message)}
+                          // --- THIS IS THE FINAL FIX ---
+                          // We wrap the call in curly braces to ensure the function
+                          // implicitly returns 'void', satisfying the prop's type.
+                          onUploadError={(error) => {
+                            toast.error(error.message);
+                          }}
                         />
                       </div>
                     </FormControl>
@@ -194,11 +198,9 @@ const CategoryForm = ({
                 </FormItem>
               )}
             />
-            {/* --- END OF UPDATED IMAGES FIELD --- */}
           </CardContent>
         </Card>
 
-        {/* ... (Sub-Categories and Submit button remain the same) ... */}
         <Card>
           <CardHeader className="flex-row items-center justify-between">
             <CardTitle>Sub-Categories</CardTitle>

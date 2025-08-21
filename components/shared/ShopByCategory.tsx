@@ -1,7 +1,19 @@
+// FILE: components/shared/ShopByCategory.tsx
+
 import { getHomepageCategories } from "@/lib/actions/category.actions";
 import { ArrowRight } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
+
+// --- 1. THIS IS THE FINAL FIX ---
+// We define a simple, local type that EXACTLY matches the data returned
+// by the getHomepageCategories() action.
+type HomepageCategory = {
+  id: string;
+  name: string;
+  slug: string;
+  images: string[];
+};
 
 const ShopByCategory = async () => {
   const categories = await getHomepageCategories();
@@ -17,28 +29,9 @@ const ShopByCategory = async () => {
           Shop By Category
         </h2>
 
-        {/* --- START OF CHANGES --- */}
-        {/*
-          This container is now a flexbox on mobile and a grid on medium screens and up.
-          - `flex`:       Establishes a flex container.
-          - `flex-nowrap`:  Forces all items into a single row, preventing wrapping.
-          - `gap-4`:        Sets space between items (you can adjust from gap-8).
-          - `overflow-x-auto`:  Enables horizontal scrolling.
-          - `scrollbar-hide`: (Optional) A common utility to hide the scrollbar visually.
-          - `md:grid`:      At the medium breakpoint, switch the layout back to a grid.
-          - `md:grid-cols-2 lg:grid-cols-3`:  Your original responsive grid columns.
-          - `md:gap-8`:       Use a larger gap on the grid layout.
-        */}
         <div className="flex flex-nowrap gap-4 overflow-x-auto md:grid md:grid-cols-2 lg:grid-cols-3 md:gap-8 scrollbar-hide">
-          {categories.map((category) => (
-            /*
-              Each item needs a defined size to work correctly in the flex container.
-              - `flex-shrink-0`: Prevents the item from shrinking to fit.
-              - `basis-4/5`:   Sets the initial width of the item to 80% of the container.
-                               This creates the effect of seeing the next item "peeking" out.
-              - `sm:basis-1/2`: On slightly larger small screens, show two items.
-              - `md:basis-auto`: When the layout switches to grid, let the grid control the size.
-            */
+          {/* 2. We use our new, perfectly matching type here */}
+          {categories.map((category: HomepageCategory) => (
             <Link
               href={`/collections/${category.slug}`}
               key={category.id}
@@ -64,7 +57,6 @@ const ShopByCategory = async () => {
             </Link>
           ))}
         </div>
-        {/* --- END OF CHANGES --- */}
       </div>
     </section>
   );

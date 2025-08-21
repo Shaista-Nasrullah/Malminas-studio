@@ -1,3 +1,5 @@
+// FILE: app/admin/products/page.tsx
+
 import Link from "next/link";
 import { getAllProducts, deleteProduct } from "@/lib/actions/prodct.actions";
 import { formatCurrency, formatId } from "@/lib/utils";
@@ -14,21 +16,20 @@ import Pagination from "@/components/shared/pagination";
 import DeleteDialog from "@/components/shared/delete-dialog";
 import { requireAdmin } from "@/lib/auth-guard";
 
-const AdminProductsPage = async (props: {
-  searchParams: Promise<{
-    page: string;
-    query: string;
-    category: string;
-  }>;
+// --- CORRECTED ---: Props are a plain object
+const AdminProductsPage = async ({
+  searchParams,
+}: {
+  searchParams: { page?: string; query?: string; category?: string };
 }) => {
   await requireAdmin();
 
-  const searchParams = await props.searchParams;
-
+  // --- CORRECTED ---: Destructure directly from the plain object
   const page = Number(searchParams.page) || 1;
   const searchText = searchParams.query || "";
   const category = searchParams.category || "";
 
+  // The getAllProducts function now correctly includes the category object
   const products = await getAllProducts({
     query: searchText,
     page,
@@ -76,16 +77,10 @@ const AdminProductsPage = async (props: {
               <TableCell className="text-right">
                 {formatCurrency(product.price.toString())}
               </TableCell>
-
-              {/* 
-                HIGHLIGHT: The order of these cells has been corrected
-                to match the header order. The optional chaining `?.` is a
-                safety measure in case a product has no category.
-              */}
-              <TableCell>{product?.category?.name}</TableCell>
+              {/* This will now work because the full category object is fetched */}
+              <TableCell>{product.category?.name}</TableCell>
               <TableCell>{product.stock}</TableCell>
               <TableCell>{product.discountPercentage}</TableCell>
-
               <TableCell className="flex gap-1">
                 <Button asChild variant="outline" size="sm">
                   <Link href={`/admin/products/${product.id}`}>Edit</Link>

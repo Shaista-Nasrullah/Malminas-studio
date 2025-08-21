@@ -1,34 +1,44 @@
-// app/(root)/order/[id]/page.tsx
+// FILE: app/(root)/order/[id]/page.tsx
 
 import { Metadata } from "next";
 import { getOrderById } from "@/lib/actions/order.actions";
 import { notFound } from "next/navigation";
-import { ShippingAddress } from "@/types";
+import { ShippingAddress, Order } from "@/types";
 import OrderConfirmationDisplay from "./order-details-table";
-// We no longer import the display component here, we can use the original name
-// import OrderConfirmationDisplay from "./order-confirmation-display";
 
 export const metadata: Metadata = {
   title: "Thank You For Your Order",
 };
 
-// Fix for Next.js 15
-const OrderDetailsPage = async (props: { params: Promise<{ id: string }> }) => {
-  const { id } = await props.params;
+const OrderDetailsPage = async ({ params }: { params: { id: string } }) => {
+  const { id } = params;
+  const orderFromDb = await getOrderById(id);
+  if (!orderFromDb) {
+    notFound();
+  }
 
-  const order = await getOrderById(id);
-  if (!order) notFound();
+  // --- THIS IS THE FINAL FIX ---
+  // We manually convert ALL fields to strings to match the 'Order' type.
+  const formattedOrder: Order = {
+    ...orderFromDb,
+    itemsPrice: orderFromDb.itemsPrice.toString(),
+    shippingPrice: orderFromDb.shippingPrice.toString(),
+    taxPrice: orderFromDb.taxPrice.toString(),
+    totalPrice: orderFromDb.totalPrice.toString(),
+    createdAt: orderFromDb.createdAt.toISOString(),
+    paidAt: orderFromDb.paidAt ? orderFromDb.paidAt.toISOString() : null,
+    deliveredAt: orderFromDb.deliveredAt
+      ? orderFromDb.deliveredAt.toISOString()
+      : null,
+    shippingAddress: orderFromDb.shippingAddress as ShippingAddress,
+    // Ensure orderitems also have their price converted
+    orderitems: orderFromDb.orderitems.map((item) => ({
+      ...item,
+      price: item.price.toString(),
+    })),
+  };
 
-  // We are no longer translating anything here.
-  // We just pass the entire order object directly to the display component.
-  return (
-    <OrderConfirmationDisplay
-      order={{
-        ...order,
-        shippingAddress: order.shippingAddress as ShippingAddress,
-      }}
-    />
-  );
+  return <OrderConfirmationDisplay order={formattedOrder} />;
 };
 
 export default OrderDetailsPage;

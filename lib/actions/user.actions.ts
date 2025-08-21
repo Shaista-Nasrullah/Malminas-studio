@@ -8,7 +8,6 @@ import {
   updateUserSchema,
 } from "../validators";
 import { auth, signIn, signOut } from "@/auth";
-import { isRedirectError } from "next/dist/client/components/redirect-error";
 import { hashSync } from "bcrypt-ts-edge";
 import { formatError } from "../utils";
 import { ShippingAddress } from "@/types";
@@ -19,14 +18,11 @@ import { Prisma } from "@prisma/client";
 import { revalidatePath } from "next/cache";
 
 // sign in the user with credentials
-// sign in the user with credentials
 export async function signInWithCredentials(
   prevState: unknown,
   formData: FormData
 ) {
   try {
-    // HIGHLIGHT: 1. Read the `rememberMe` value from the formData.
-    // It comes in as a string ("true" or "false"), so we convert it to a boolean.
     const rememberMe = formData.get("rememberMe") === "true";
 
     const user = signInFormSchema.parse({
@@ -34,40 +30,16 @@ export async function signInWithCredentials(
       password: formData.get("password"),
     });
 
-    // HIGHLIGHT: 2. Pass the `rememberMe` boolean to the `signIn` function.
-    // We spread the existing user object and add the rememberMe property.
-    await signIn("credentials", { ...user, rememberMe });
-
+    // The `signIn` function in Next.js 14 handles its own redirects.
+    // It does not throw an error that needs to be caught.
+    await signIn("credentials", { ...user, rememberMe, redirect: false });
+    // Tell the client-side form that the login was a success.
+    // The client will then handle the page navigation.
     return { success: true, message: "Signed in successfully" };
   } catch (error) {
-    if (isRedirectError(error)) {
-      throw error;
-    }
-
     return { success: false, message: "Invalid email or password" };
   }
 }
-// export async function signInWithCredentials(
-//   prevState: unknown,
-//   formData: FormData
-// ) {
-//   try {
-//     const user = signInFormSchema.parse({
-//       email: formData.get("email"),
-//       password: formData.get("password"),
-//     });
-
-//     await signIn("credentials", user);
-
-//     return { success: true, message: "Signed in successfully" };
-//   } catch (error) {
-//     if (isRedirectError(error)) {
-//       throw error;
-//     }
-
-//     return { success: false, message: "Invalid email or password" };
-//   }
-// }
 
 //Sign user out
 export async function signOutUser() {
@@ -85,30 +57,28 @@ export async function signUpUser(prevState: unknown, formData: FormData) {
     });
 
     const plainPassword = user.password;
-
     user.password = await hashSync(user.password, 10);
 
     await prisma.user.create({
-      data: {
-        name: user.name,
-        email: user.email,
-        password: user.password,
-      },
+      data: { name: user.name, email: user.email, password: user.password },
     });
 
+    // Sign in the user immediately after they sign up
     await signIn("credentials", {
       email: user.email,
       password: plainPassword,
+      redirect: false, // Important for form submissions
     });
 
     return { success: true, message: "User registered successfully" };
   } catch (error) {
-    if (isRedirectError(error)) {
-      throw error;
-    }
+    // --- SIMPLIFIED ---
+    // The special check for 'isRedirectError' is no longer needed.
     return { success: false, message: formatError(error) };
   }
 }
+
+// --- ALL OTHER FUNCTIONS IN THE FILE REMAIN UNCHANGED ---
 
 //Get user by the ID
 export async function getUserById(userId: string) {
@@ -121,82 +91,32 @@ export async function getUserById(userId: string) {
 
 // Update the user's address
 export async function updateUserAddress(data: ShippingAddress) {
-  // --- START DEBUGGING ---
-  console.log("--- [SERVER ACTION] updateUserAddress called ---");
   try {
-    console.log("[1] Awaiting session...");
     const session = await auth();
-    console.log("[2] Session received. User ID:", session?.user?.id);
-
     if (!session?.user?.id) {
-      console.log("[!] No user ID in session. Aborting.");
-      // Added a direct return here to be safe
       return { success: false, message: "User not authenticated." };
     }
-
-    console.log("[3] Awaiting database findFirst call...");
     const currentUser = await prisma.user.findFirst({
       where: { id: session.user.id },
     });
-    console.log(
-      "[4] Database findFirst call completed. Found user:",
-      !!currentUser
-    );
-
     if (!currentUser) {
-      // This will be caught by the catch block below
       throw new Error("User not found in database");
     }
-
-    console.log("[5] Parsing data with Zod...");
     const address = shippingAddressSchema.parse(data);
-    console.log("[6] Zod parsing successful.");
-
-    console.log("[7] Awaiting database update call...");
     await prisma.user.update({
       where: { id: currentUser.id },
       data: { address },
     });
-    console.log("[8] Database update call successful.");
-
     return {
       success: true,
       message: "User updated successfully",
     };
   } catch (error) {
-    // Temporary, more robust error handling for debugging
-    console.error("--- [SERVER ACTION] CAUGHT AN ERROR ---", error);
     const message =
       error instanceof Error ? error.message : "An unknown error occurred.";
     return { success: false, message: message };
   }
-  // --- END DEBUGGING ---
 }
-// export async function updateUserAddress(data: ShippingAddress) {
-//   try {
-//     const session = await auth();
-
-//     const currentUser = await prisma.user.findFirst({
-//       where: { id: session?.user?.id },
-//     });
-
-//     if (!currentUser) throw new Error("User not found");
-
-//     const address = shippingAddressSchema.parse(data);
-
-//     await prisma.user.update({
-//       where: { id: currentUser.id },
-//       data: { address },
-//     });
-
-//     return {
-//       success: true,
-//       message: "User updated successfully",
-//     };
-//   } catch (error) {
-//     return { success: false, message: formatError(error) };
-//   }
-// }
 
 // Update user's payment method
 export async function updateUserPaymentMethod(
@@ -207,16 +127,12 @@ export async function updateUserPaymentMethod(
     const currentUser = await prisma.user.findFirst({
       where: { id: session?.user?.id },
     });
-
     if (!currentUser) throw new Error("User not found");
-
     const paymentMethod = paymentMethodSchema.parse(data);
-
     await prisma.user.update({
       where: { id: currentUser.id },
       data: { paymentMethod: paymentMethod.type },
     });
-
     return {
       success: true,
       message: "User updated successfully",
@@ -230,15 +146,12 @@ export async function updateUserPaymentMethod(
 export async function updateProfile(user: { name: string; email: string }) {
   try {
     const session = await auth();
-
     const currentUser = await prisma.user.findFirst({
       where: {
         id: session?.user?.id,
       },
     });
-
     if (!currentUser) throw new Error("User not found");
-
     await prisma.user.update({
       where: {
         id: currentUser.id,
@@ -247,7 +160,6 @@ export async function updateProfile(user: { name: string; email: string }) {
         name: user.name,
       },
     });
-
     return {
       success: true,
       message: "User updated successfully",
@@ -276,7 +188,6 @@ export async function getAllUsers({
           } as Prisma.StringFilter,
         }
       : {};
-
   const data = await prisma.user.findMany({
     where: {
       ...queryFilter,
@@ -285,9 +196,7 @@ export async function getAllUsers({
     take: limit,
     skip: (page - 1) * limit,
   });
-
   const dataCount = await prisma.user.count();
-
   return {
     data,
     totalPages: Math.ceil(dataCount / limit),
@@ -298,9 +207,7 @@ export async function getAllUsers({
 export async function deleteUser(id: string) {
   try {
     await prisma.user.delete({ where: { id } });
-
     revalidatePath("/admin/users");
-
     return {
       success: true,
       message: "User deleted successfully",
@@ -323,9 +230,7 @@ export async function updateUser(user: z.infer<typeof updateUserSchema>) {
         role: user.role,
       },
     });
-
     revalidatePath("/admin/users");
-
     return {
       success: true,
       message: "User updated successfully",

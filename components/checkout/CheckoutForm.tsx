@@ -1,3 +1,5 @@
+// FILE: components/checkout/CheckoutForm.tsx
+
 "use client";
 
 import { useForm, SubmitHandler } from "react-hook-form";
@@ -23,22 +25,22 @@ import { cn } from "@/lib/utils";
 import { ShippingAddress } from "@/types";
 import { ShippingAddressDefaultValues } from "@/lib/constants";
 import { shippingAddressSchema } from "@/lib/validators";
-
-// We will use a NEW, UNIFIED server action for both guests and users
 import { placeOrder } from "@/lib/actions/order.actions";
 
-// This schema defines what the CLIENT needs to provide
+// --- THIS IS THE FINAL FIX ---
+// We remove the `.default(false)` which was causing the conflict with the zodResolver.
+// The default value is now handled exclusively by the useForm hook.
 const clientSideCheckoutSchema = shippingAddressSchema.extend({
   email: z.string().email({ message: "Please enter a valid email." }),
   paymentMethod: z.string({ required_error: "A payment method is required." }),
-  textMeWithNews: z.boolean().default(false),
+  textMeWithNews: z.boolean(),
 });
 
 type CheckoutFormValues = z.infer<typeof clientSideCheckoutSchema>;
 
 interface CheckoutFormProps {
   user: {
-    id: string | null; // ID is null for guests
+    id: string | null;
     email: string;
     address: ShippingAddress | null;
     paymentMethod: string | null;
@@ -51,9 +53,10 @@ const CheckoutForm = ({ user }: CheckoutFormProps) => {
 
   const form = useForm<CheckoutFormValues>({
     resolver: zodResolver(clientSideCheckoutSchema),
+    // This part correctly sets the default value for the form state
     defaultValues: {
       ...(user.address || ShippingAddressDefaultValues),
-      email: user.email || "", // Use user's email if logged in
+      email: user.email || "",
       paymentMethod: user.paymentMethod || "CashOnDelivery",
       textMeWithNews: false,
     },
@@ -65,17 +68,14 @@ const CheckoutForm = ({ user }: CheckoutFormProps) => {
 
   const selectedPaymentMethod = form.watch("paymentMethod");
 
-  // This single onSubmit handler sends all necessary data to the server
   const onSubmit: SubmitHandler<CheckoutFormValues> = async (values) => {
     startTransition(async () => {
       try {
         const result = await placeOrder(values);
-
         if (result.success && result.redirectTo) {
           toast.success("Order placed successfully!");
           router.push(result.redirectTo);
         } else {
-          // Handle the specific error for existing guest emails
           if (result.errorType === "ACCOUNT_EXISTS") {
             toast.error(result.message, {
               description:
@@ -94,13 +94,11 @@ const CheckoutForm = ({ user }: CheckoutFormProps) => {
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-        {/* --- ACCOUNT SECTION --- */}
         <section className="space-y-2">
           <h2 className="text-xl font-semibold">Contact</h2>
-          {user.id ? ( // If user is logged in, display email
+          {user.id ? (
             <p className="text-sm text-gray-700">{user.email}</p>
           ) : (
-            // If guest, show email input
             <FormField
               control={form.control}
               name="email"
@@ -115,8 +113,6 @@ const CheckoutForm = ({ user }: CheckoutFormProps) => {
             />
           )}
         </section>
-
-        {/* --- DELIVERY SECTION --- */}
         <section className="space-y-4">
           <h2 className="text-xl font-semibold">Delivery</h2>
           <div className="space-y-4">
@@ -156,21 +152,6 @@ const CheckoutForm = ({ user }: CheckoutFormProps) => {
                 </FormItem>
               )}
             />
-            {/* <FormField
-              control={form.control}
-              name="apartment"
-              render={({ field }) => (
-                <FormItem>
-                  <FormControl>
-                    <Input
-                      placeholder="Apartment, suite, etc. (optional)"
-                      {...field}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            /> */}
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               <FormField
                 control={form.control}
@@ -230,8 +211,6 @@ const CheckoutForm = ({ user }: CheckoutFormProps) => {
             />
           </div>
         </section>
-
-        {/* --- SHIPPING METHOD SECTION --- */}
         <section>
           <h2 className="text-xl font-semibold">Shipping method</h2>
           <div className="mt-4 border border-amber-500 bg-amber-50/50 rounded-lg p-4 flex justify-between items-center">
@@ -239,8 +218,6 @@ const CheckoutForm = ({ user }: CheckoutFormProps) => {
             <p className="text-sm font-semibold">Rs 250.00</p>
           </div>
         </section>
-
-        {/* --- PAYMENT SECTION --- */}
         <section className="space-y-4">
           <h2 className="text-xl font-semibold">Payment</h2>
           <p className="text-sm text-gray-500">
@@ -378,48 +355,6 @@ const CheckoutForm = ({ user }: CheckoutFormProps) => {
             )}
           />
         </section>
-
-        {/* --- BILLING ADDRESS SECTION ---
-        <section>
-          <h2 className="text-xl font-semibold">Billing address</h2>
-          <RadioGroup
-            defaultValue="same"
-            className="mt-4 border border-gray-200 rounded-lg divide-y divide-gray-200"
-          >
-            <div className="p-4 border border-amber-500 bg-amber-50/50 rounded-t-lg">
-              <FormItem className="flex items-center space-x-3">
-                <FormControl>
-                  <RadioGroupItem value="same" id="billing_same" />
-                </FormControl>
-                <FormLabel
-                  htmlFor="billing_same"
-                  className="font-normal cursor-pointer"
-                >
-                  Same as shipping address
-                </FormLabel>
-              </FormItem>
-            </div>
-            <div className="p-4">
-              <FormItem className="flex items-center space-x-3">
-                <FormControl>
-                  <RadioGroupItem
-                    value="different"
-                    id="billing_different"
-                    disabled
-                  />
-                </FormControl>
-                <FormLabel
-                  htmlFor="billing_different"
-                  className="font-normal cursor-pointer text-gray-500"
-                >
-                  Use a different billing address
-                </FormLabel>
-              </FormItem>
-            </div>
-          </RadioGroup>
-        </section> */}
-
-        {/* --- SUBMIT BUTTON --- */}
         <div className="pt-4">
           <Button
             type="submit"

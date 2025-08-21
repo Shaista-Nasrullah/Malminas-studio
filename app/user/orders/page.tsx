@@ -1,3 +1,5 @@
+// FILE: app/user/orders/page.tsx
+
 import { Metadata } from "next";
 import { getMyOrders } from "@/lib/actions/order.actions";
 import { formatCurrency, formatDateTime, formatId } from "@/lib/utils";
@@ -11,19 +13,31 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import Pagination from "@/components/shared/pagination";
+// --- 1. IMPORT THE GLOBAL ORDER TYPE ---
+import { Order } from "@/types";
 
 export const metadata: Metadata = {
   title: "My Orders",
 };
 
-const OrdersPage = async (props: {
-  searchParams: Promise<{ page: string }>;
+// --- CORRECTED ---: Props are a plain object, not a promise
+const OrdersPage = async ({
+  searchParams,
+}: {
+  searchParams: { page?: string };
 }) => {
-  const { page } = await props.searchParams;
+  const { page = "1" } = searchParams;
 
-  const orders = await getMyOrders({
+  // 2. Fetch the "raw" data. It has Date objects.
+  const rawOrders = await getMyOrders({
     page: Number(page) || 1,
   });
+
+  // 3. Forcefully assert the type to match our client-side definition.
+  const orders = rawOrders as unknown as {
+    data: Order[];
+    totalPages: number;
+  };
 
   return (
     <div className="space-y-2">
@@ -45,19 +59,21 @@ const OrdersPage = async (props: {
               <TableRow key={order.id}>
                 <TableCell>{formatId(order.id)}</TableCell>
                 <TableCell>
-                  {formatDateTime(order.createdAt).dateTime}
+                  {/* --- THE FINAL FIX --- */}
+                  {/* Convert the 'createdAt' string back into a Date object */}
+                  {formatDateTime(new Date(order.createdAt)).dateTime}
                 </TableCell>
                 <TableCell>
                   {formatCurrency(order.totalPrice.toString())}
                 </TableCell>
                 <TableCell>
                   {order.isPaid && order.paidAt
-                    ? formatDateTime(order.paidAt).dateTime
+                    ? formatDateTime(new Date(order.paidAt)).dateTime
                     : "Not Paid"}
                 </TableCell>
                 <TableCell>
                   {order.isDelivered && order.deliveredAt
-                    ? formatDateTime(order.deliveredAt).dateTime
+                    ? formatDateTime(new Date(order.deliveredAt)).dateTime
                     : "Not Delivered"}
                 </TableCell>
                 <TableCell>

@@ -1,3 +1,5 @@
+// FILE: app/admin/overview/page.tsx
+
 import {
   Table,
   TableBody,
@@ -14,6 +16,18 @@ import { Metadata } from "next";
 import Link from "next/link";
 import { requireAdmin } from "@/lib/auth-guard";
 import Charts from "./charts";
+// --- 1. IMPORT PRISMA'S TYPE ---
+// We need a type for the raw data from the database
+import { Decimal } from "@prisma/client/runtime/library";
+
+// --- 2. DEFINE THE SHAPE OF THE RAW DATA ---
+// This perfectly matches what getOrderSummary returns
+type RawOrderSummaryItem = {
+  id: string;
+  createdAt: Date;
+  totalPrice: Decimal;
+  user: { name: string | null } | null;
+};
 
 export const metadata: Metadata = {
   title: "Admin Dashboard",
@@ -36,7 +50,7 @@ const AdminOverviewPage = async () => {
           <CardContent>
             <div className="text-2xl font-bold">
               {formatCurrency(
-                summary.totalSales._sum.totalPrice?.toString() || 0
+                summary.totalSales._sum.totalPrice?.toString() || "0"
               )}
             </div>
           </CardContent>
@@ -56,7 +70,6 @@ const AdminOverviewPage = async () => {
             </div>
           </CardContent>
         </Card>
-
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">
@@ -74,10 +87,11 @@ const AdminOverviewPage = async () => {
         </Card>
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            {/* <CardTitle className="text-sm font-medium">Products</CardTitle> */}
-            <Link href="/admin/products" className="hover:underline">
-              Products
-            </Link>
+            <CardTitle className="text-sm font-medium">
+              <Link href="/admin/products" className="hover:underline">
+                Products
+              </Link>
+            </CardTitle>
             <Barcode />
           </CardHeader>
           <CardContent>
@@ -111,15 +125,17 @@ const AdminOverviewPage = async () => {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {summary.latestSales.map((order) => (
+                {/* --- 3. THIS IS THE FINAL FIX --- */}
+                {/* We use our new 'RawOrderSummaryItem' type */}
+                {summary.latestSales.map((order: RawOrderSummaryItem) => (
                   <TableRow key={order.id}>
+                    <TableCell>{order.user?.name || "Deleted User"}</TableCell>
                     <TableCell>
-                      {order?.user?.name ? order.user.name : "Deleted User"}
-                    </TableCell>
-                    <TableCell>
+                      {/* Now this is correct, because order.createdAt IS a Date */}
                       {formatDateTime(order.createdAt).dateOnly}
                     </TableCell>
                     <TableCell>
+                      {/* And this is correct, because we convert the Decimal to a string */}
                       {formatCurrency(order.totalPrice.toString())}
                     </TableCell>
                     <TableCell>

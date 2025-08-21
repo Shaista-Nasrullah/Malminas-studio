@@ -1,3 +1,5 @@
+// FILE: app/admin/orders/page.tsx
+
 import {
   Table,
   TableBody,
@@ -14,22 +16,34 @@ import Link from "next/link";
 import Pagination from "@/components/shared/pagination";
 import { requireAdmin } from "@/lib/auth-guard";
 import DeleteDialog from "@/components/shared/delete-dialog";
+// --- 1. IMPORT THE GLOBAL ORDER TYPE ---
+import { Order } from "@/types";
 
 export const metadata: Metadata = {
   title: "Admin Orders",
 };
 
-const AdminOrdersPage = async (props: {
-  searchParams: Promise<{ page: string; query: string }>;
+const AdminOrdersPage = async ({
+  searchParams,
+}: {
+  searchParams: { page?: string; query?: string };
 }) => {
-  const { page = "1", query: searchText } = await props.searchParams;
+  const { page = "1", query: searchText = "" } = searchParams;
 
   await requireAdmin();
 
-  const orders = await getAllOrders({
+  // 2. Fetch the "raw" data from the server action. It has Date objects.
+  const rawOrders = await getAllOrders({
     page: Number(page),
     query: searchText,
   });
+
+  // 3. Forcefully assert the type to match our client-side definition.
+  // This tells TypeScript to treat the Date objects as strings for type-checking purposes.
+  const orders = rawOrders as unknown as {
+    data: Order[];
+    totalPages: number;
+  };
 
   return (
     <div className="space-y-2">
@@ -49,6 +63,7 @@ const AdminOrdersPage = async (props: {
       <div className="overflow-x-auto">
         <Table>
           <TableHeader>
+            {/* ... TableHeader content is correct ... */}
             <TableRow>
               <TableHead>ID</TableHead>
               <TableHead>DATE</TableHead>
@@ -64,7 +79,10 @@ const AdminOrdersPage = async (props: {
               <TableRow key={order.id}>
                 <TableCell>{formatId(order.id)}</TableCell>
                 <TableCell>
-                  {formatDateTime(order.createdAt).dateTime}
+                  {/* --- THE FINAL FIX --- */}
+                  {/* We convert the 'createdAt' string back into a Date object */}
+                  {/* right before passing it to the formatting function. */}
+                  {formatDateTime(new Date(order.createdAt)).dateTime}
                 </TableCell>
                 <TableCell>{order.user.name}</TableCell>
                 <TableCell>
@@ -72,12 +90,12 @@ const AdminOrdersPage = async (props: {
                 </TableCell>
                 <TableCell>
                   {order.isPaid && order.paidAt
-                    ? formatDateTime(order.paidAt).dateTime
+                    ? formatDateTime(new Date(order.paidAt)).dateTime
                     : "Not Paid"}
                 </TableCell>
                 <TableCell>
                   {order.isDelivered && order.deliveredAt
-                    ? formatDateTime(order.deliveredAt).dateTime
+                    ? formatDateTime(new Date(order.deliveredAt)).dateTime
                     : "Not Delivered"}
                 </TableCell>
                 <TableCell>
