@@ -29,43 +29,56 @@ const calcPrice = (items: CartItem[]) => {
   };
 };
 
+// The complete, corrected function to copy-paste
 export async function addItemToCart(data: CartItem) {
   try {
-    // Check for cart cookie
-    const sessionCartId = (await cookies()).get("sessionCartId")?.value;
-    if (!sessionCartId) throw new Error("Cart session not found");
+    // --- START OF FIX ---
+    // 1. Attempt to get the session ID from the cookies. Use 'let' because it might be reassigned.
+    let sessionCartId = (await cookies()).get("sessionCartId")?.value;
 
-    // Get session and user ID
+    // 2. If the session ID doesn't exist (this is a new user or cleared cookies)...
+    if (!sessionCartId) {
+      // ...create a new, unique session ID.
+      sessionCartId = crypto.randomUUID();
+      // ...and set it in the user's browser cookies for the next request.
+      cookies().set("sessionCartId", sessionCartId);
+    }
+    // --- END OF FIX ---
+
+    // Get session and user ID (if logged in)
     const session = await auth();
     const userId = session?.user?.id ? (session.user.id as string) : undefined;
 
-    // Get cart
+    // Get the existing cart. This relies on the fix to getMyCart() where it returns
+    // 'undefined' instead of throwing an error if the cookie is missing.
     const cart = await getMyCart();
 
-    // Parse and validate item
+    // Parse and validate the incoming item data
     const item = cartItemSchema.parse(data);
 
-    // Find product in database
+    // Find the product in the database to ensure it exists and to get its details
     const product = await prisma.product.findFirst({
       where: { id: item.productId },
     });
     if (!product) throw new Error("Product not found");
 
+    // CASE 1: The user does NOT have a cart yet.
     if (!cart) {
-      // Create new cart object
+      // Create a new cart object with the first item.
       const newCart = insertCartSchema.parse({
         userId: userId,
         items: [item],
+        // The sessionCartId is guaranteed to exist now, either from the cookie or the one we just created.
         sessionCartId: sessionCartId,
         ...calcPrice([item]),
       });
 
-      // Add to database
+      // Save the new cart to the database.
       await prisma.cart.create({
         data: newCart,
       });
 
-      // Revalidate product page
+      // Revalidate the product page path to reflect any changes.
       revalidatePath(`/product/${product.slug}`);
 
       return {
@@ -73,31 +86,28 @@ export async function addItemToCart(data: CartItem) {
         message: `${product.name} added to cart`,
       };
     } else {
-      // Check if item is already in cart
+      // CASE 2: The user ALREADY has a cart.
       const existItem = (cart.items as CartItem[]).find(
         (x) => x.productId === item.productId
       );
 
       if (existItem) {
-        // Check stock
+        // Subcase 2a: The item is already in the cart, so we update its quantity.
         if (product.stock < existItem.qty + 1) {
           throw new Error("Not enough stock");
         }
-
-        // Increase the quantity
+        // Find the item and increment its quantity.
         (cart.items as CartItem[]).find(
           (x) => x.productId === item.productId
         )!.qty = existItem.qty + 1;
       } else {
-        // If item does not exist in cart
-        // Check stock
+        // Subcase 2b: The item is not in the cart, so we add it.
         if (product.stock < 1) throw new Error("Not enough stock");
-
-        // Add item to the cart.items
+        // Add the new item to the cart's items array.
         cart.items.push(item);
       }
 
-      // Save to database
+      // Save the updated cart to the database.
       await prisma.cart.update({
         where: { id: cart.id },
         data: {
@@ -126,20 +136,28 @@ export async function addItemToCart(data: CartItem) {
 export async function getMyCart() {
   // Check for cart cookie
   const sessionCartId = (await cookies()).get("sessionCartId")?.value;
-  if (!sessionCartId) throw new Error("Cart session not found");
+
+  // --- THIS IS THE CRITICAL FIX ---
+  // If there is no session cookie, it means the user doesn't have a cart.
+  // Instead of throwing an error, we gracefully return undefined.
+  if (!sessionCartId) {
+    return undefined;
+  }
+  // --- END OF FIX ---
 
   // Get session and user ID
   const session = await auth();
   const userId = session?.user?.id ? (session.user.id as string) : undefined;
 
-  // Get user cart from database
+  // Get user cart from the database using either their login ID or session ID
   const cart = await prisma.cart.findFirst({
     where: userId ? { userId: userId } : { sessionCartId: sessionCartId },
   });
 
+  // If the database lookup returns nothing, they don't have a cart
   if (!cart) return undefined;
 
-  // Convert decimals and return
+  // If a cart is found, convert decimals to strings and return the plain object
   return convertToPlainObject({
     ...cart,
     items: cart.items as CartItem[],

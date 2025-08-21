@@ -25,10 +25,10 @@ const OrderDetailsPage = async ({ params }: { params: { id: string } }) => {
     shippingPrice: orderFromDb.shippingPrice.toString(),
     taxPrice: orderFromDb.taxPrice.toString(),
     totalPrice: orderFromDb.totalPrice.toString(),
-    createdAt: orderFromDb.createdAt.toISOString(),
-    paidAt: orderFromDb.paidAt ? orderFromDb.paidAt.toISOString() : null,
+    createdAt: orderFromDb.createdAt.toString(),
+    paidAt: orderFromDb.paidAt ? orderFromDb.paidAt.toString() : null,
     deliveredAt: orderFromDb.deliveredAt
-      ? orderFromDb.deliveredAt.toISOString()
+      ? orderFromDb.deliveredAt.toString()
       : null,
     shippingAddress: orderFromDb.shippingAddress as ShippingAddress,
     // Ensure orderitems also have their price converted
