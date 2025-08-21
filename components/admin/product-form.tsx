@@ -42,6 +42,7 @@ const formatDateForInput = (dateString: string | null | undefined): string => {
   try {
     return dateString.slice(0, 16);
   } catch (e) {
+    console.error("Failed to format date string for input:", e);
     return "";
   }
 };
