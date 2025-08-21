@@ -30,11 +30,14 @@ export async function signInWithCredentials(
       password: formData.get("password"),
     });
 
+    // The `signIn` function in Next.js 14 handles its own redirects.
+    // It does not throw an error that needs to be caught.
     await signIn("credentials", { ...user, rememberMe, redirect: false });
-
+    // Tell the client-side form that the login was a success.
+    // The client will then handle the page navigation.
     return { success: true, message: "Signed in successfully" };
-  } catch (_error) {
-    return { success: false, message: "Invalid email or password" };
+  } catch (error) {
+    return { success: false, message: formatError(error) };
   }
 }
 
