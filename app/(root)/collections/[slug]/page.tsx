@@ -54,7 +54,6 @@ const CollectionPage = async ({ params, searchParams }: Props) => {
 
   return (
     <div className="wrapper mx-auto px-4 py-8">
-      <h1>Hello baby!</h1>
       <h1 className="text-4xl font-bold mb-4">{category.name}</h1>
       <CollectionFilterBar productCount={productsData.count} />
       <div className="grid grid-cols-2 md-grid-cols-3 lg:grid-cols-4 gap-6 mt-8">

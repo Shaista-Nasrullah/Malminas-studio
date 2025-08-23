@@ -1,5 +1,5 @@
 // In components/shared/header/AnnouncementCarousel.tsx
-"use client"; // This is now the Client Component
+"use client";
 
 import { useEffect, useState, type FC } from "react";
 import { Instagram, ChevronLeft, ChevronRight } from "lucide-react";
@@ -23,22 +23,15 @@ export const AnnouncementCarousel: FC<AnnouncementCarouselProps> = ({
     { label: "Pinterest", icon: FaPinterest, href: "https://pinterest.com" },
   ];
 
-  // --- AUTO-PLAY LOGIC ---
   useEffect(() => {
-    // Don't start a timer if there's only one (or zero) announcements
     if (announcements.length <= 1) return;
-
-    // Set up an interval to change the announcement every 5 seconds (5000 milliseconds)
     const timer = setInterval(() => {
       setCurrentIndex((prevIndex) =>
         prevIndex === announcements.length - 1 ? 0 : prevIndex + 1
       );
     }, 5000);
-
-    // This is a cleanup function. It runs when the component is unmounted
-    // to prevent memory leaks.
     return () => clearInterval(timer);
-  }, [announcements.length]); // Re-run the effect if the number of announcements changes
+  }, [announcements.length]);
 
   const handlePrevious = () => {
     setCurrentIndex((prevIndex) =>
@@ -58,9 +51,11 @@ export const AnnouncementCarousel: FC<AnnouncementCarouselProps> = ({
 
   return (
     <div className="bg-[#998B20] text-white w-full h-10 flex items-center">
-      <div className="wrapper mx-auto grid grid-cols-1 lg:grid-cols-3 items-center py-2 px-4 sm:px-6 lg:px-8 text-sm">
-        {/* Social Icons */}
-        <div className="hidden lg:flex items-center gap-5 justify-self-start">
+      {/* --- THIS IS THE FINAL FIX --- */}
+      {/* Updated grid classes for full responsiveness */}
+      <div className="wrapper mx-auto grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 items-center py-2 px-4 sm:px-6 lg:px-8 text-sm">
+        {/* Social Icons: Now visible on medium screens and up */}
+        <div className="hidden md:flex items-center gap-5 justify-self-start">
           {socialLinks.map((social) => (
             <a
               key={social.label}
@@ -75,8 +70,8 @@ export const AnnouncementCarousel: FC<AnnouncementCarouselProps> = ({
           ))}
         </div>
 
-        {/* Dynamic Announcement Carousel */}
-        <div className="flex items-center gap-4 sm:gap-6 justify-self-center whitespace-nowrap">
+        {/* Dynamic Announcement Carousel: Adjusts alignment for medium screens */}
+        <div className="flex items-center gap-4 sm:gap-6 justify-self-center md:justify-self-end lg:justify-self-center whitespace-nowrap">
           <button
             aria-label="Previous Announcement"
             className="hover:opacity-75 transition-opacity disabled:opacity-50"
@@ -100,7 +95,7 @@ export const AnnouncementCarousel: FC<AnnouncementCarouselProps> = ({
           </button>
         </div>
 
-        {/* Spacer for layout */}
+        {/* Spacer for large screen layout (unchanged) */}
         <div className="hidden lg:block justify-self-end"></div>
       </div>
     </div>

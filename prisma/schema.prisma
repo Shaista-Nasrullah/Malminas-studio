@@ -7,7 +7,7 @@ generator client {
 datasource db {
   provider  = "postgresql"
   url       = env("DATABASE_URL")
-  directUrl = env("DATABASE_URL_UNPOOLED")
+  directUrl = env("DIRECT_URL")
 }
 
 // ... rest of your schema (model User, model Product, etc.)
