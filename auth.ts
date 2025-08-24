@@ -10,6 +10,7 @@ import { prisma } from "@/db/prisma";
 
 export const authConfig = {
   adapter: PrismaAdapter(prisma),
+  trustHost: true,
   pages: {
     signIn: "/sign-in",
     error: "/sign-in",
