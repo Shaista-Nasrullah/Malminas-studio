@@ -5,6 +5,7 @@ import { useEffect, useState, type FC } from "react";
 import { Instagram, ChevronLeft, ChevronRight } from "lucide-react";
 import { FaFacebook, FaYoutube, FaTiktok, FaPinterest } from "react-icons/fa";
 import { type Announcement } from "@prisma/client";
+import { PRIMARY_COLOR } from "@/lib/constants";
 
 interface AnnouncementCarouselProps {
   announcements: Announcement[];
@@ -16,11 +17,26 @@ export const AnnouncementCarousel: FC<AnnouncementCarouselProps> = ({
   const [currentIndex, setCurrentIndex] = useState(0);
 
   const socialLinks = [
-    { label: "Facebook", icon: FaFacebook, href: "https://facebook.com" },
-    { label: "Instagram", icon: Instagram, href: "https://instagram.com" },
-    { label: "YouTube", icon: FaYoutube, href: "https://youtube.com" },
-    { label: "Tiktok", icon: FaTiktok, href: "https://tiktok.com" },
-    { label: "Pinterest", icon: FaPinterest, href: "https://pinterest.com" },
+    {
+      label: "Facebook",
+      icon: FaFacebook,
+      href: "https://www.facebook.com/share/1CTnhSUGjU/?mibextid=wwXIfr",
+    },
+    {
+      label: "Instagram",
+      icon: Instagram,
+      href: "https://www.instagram.com/malminas_traditional_wear?utm_source=qr",
+    },
+    {
+      label: "Tiktok",
+      icon: FaTiktok,
+      href: "https://www.tiktok.com/@malmina910?_t=ZS-8zDcOxA8Vlq&_r=1",
+    },
+    {
+      label: "Pinterest",
+      icon: FaPinterest,
+      href: "https://pin.it/6CkqZpKfX",
+    },
   ];
 
   useEffect(() => {
@@ -50,7 +66,10 @@ export const AnnouncementCarousel: FC<AnnouncementCarouselProps> = ({
   }
 
   return (
-    <div className="bg-[#998B20] text-white w-full h-10 flex items-center">
+    <div
+      style={{ backgroundColor: PRIMARY_COLOR }}
+      className="text-white w-full h-10 flex items-center"
+    >
       {/* --- THIS IS THE FINAL FIX --- */}
       {/* Updated grid classes for full responsiveness */}
       <div className="wrapper mx-auto grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 items-center py-2 px-4 sm:px-6 lg:px-8 text-sm">

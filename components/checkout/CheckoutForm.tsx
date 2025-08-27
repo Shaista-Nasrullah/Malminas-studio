@@ -291,12 +291,12 @@ const CheckoutForm = ({ user }: CheckoutFormProps) => {
                   {selectedPaymentMethod === "JazzCash" && (
                     <div className="bg-gray-50/75 p-4 pl-12 text-sm text-gray-600 border-t border-gray-200 space-y-1">
                       <p>
-                        <span className="font-semibold">Jazz Cash:</span>{" "}
-                        0333-6820-900 | Muhammad Usman Raza
+                        <span className="font-semibold">Jazz Cash:</span> 0333
+                        8328 707 | Pairmin Kakar
                       </p>
                       <p>
-                        <span className="font-semibold">Easy Paisa:</span>{" "}
-                        0333-6820-900 | Muhammad Usman Raza
+                        <span className="font-semibold">Easy Paisa:</span> 0333
+                        8328 707 | Pairmin Kakar
                       </p>
                     </div>
                   )}
@@ -330,15 +330,13 @@ const CheckoutForm = ({ user }: CheckoutFormProps) => {
                     <div className="bg-gray-50/75 p-4 pl-12 text-sm text-gray-600 border-t border-gray-200 space-y-1">
                       <p>
                         <span className="font-semibold">ACCOUNT TITLE:</span>{" "}
-                        KUCHI JEWELS
+                        Malminas Traditional studio
                       </p>
                       <p>
-                        <span className="font-semibold">ACCOUNT #:</span>{" "}
-                        0063-0981-0116-460-12
+                        <span className="font-semibold">ACCOUNT #:</span> 0063
                       </p>
                       <p>
-                        <span className="font-semibold">IBAN:</span>{" "}
-                        PK65-BAHL-0063-0981-01164-6-01
+                        <span className="font-semibold">IBAN:</span> PK65
                       </p>
                       <p>
                         <span className="font-semibold">BANK NAME:</span> BANK
@@ -346,7 +344,7 @@ const CheckoutForm = ({ user }: CheckoutFormProps) => {
                       </p>
                       <p>
                         <span className="font-semibold">BIC/SWIFT CODE:</span>{" "}
-                        BAHLPKKA
+                        BAHL
                       </p>
                     </div>
                   )}

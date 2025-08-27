@@ -1,11 +1,11 @@
 // FILE: components/footer.tsx
 
 import { getFooterCategories } from "@/lib/actions/category.actions";
-import { ArrowRight, Facebook, Instagram, Youtube } from "lucide-react";
+import { ArrowRight, Facebook, Instagram } from "lucide-react";
 import { FaTiktok, FaPinterest } from "react-icons/fa";
 import Image from "next/image";
 import Link from "next/link";
-import { COPYRIGHT_HOLDER } from "@/lib/constants";
+import { COPYRIGHT_HOLDER, PRIMARY_COLOR } from "@/lib/constants";
 // --- 1. IMPORT THE TYPE ---
 // We only need a simple version of the Category type for the footer
 import { Category } from "@/types";
@@ -28,7 +28,10 @@ const Footer = async () => {
   );
 
   return (
-    <footer className="text-white/80" style={{ backgroundColor: "#998B20" }}>
+    <footer
+      className="text-white/80"
+      style={{ backgroundColor: PRIMARY_COLOR }}
+    >
       <div className="wrapper mx-auto px-4 pt-16 pb-8">
         <div className="grid grid-cols-1 gap-12 md:grid-cols-2 lg:grid-cols-4">
           <div className="space-y-6">
@@ -50,19 +53,25 @@ const Footer = async () => {
               heritage.
             </p>
             <div className="flex space-x-4">
-              <Link href="#" aria-label="Facebook">
+              <Link
+                href="https://www.facebook.com/share/1CTnhSUGjU/?mibextid=wwXIfr"
+                aria-label="Facebook"
+              >
                 <Facebook size={20} />
               </Link>
-              <Link href="#" aria-label="Instagram">
+              <Link
+                href="https://www.instagram.com/malminas_traditional_wear?utm_source=qr"
+                aria-label="Instagram"
+              >
                 <Instagram size={20} />
               </Link>
-              <Link href="#" aria-label="YouTube">
-                <Youtube size={20} />
-              </Link>
-              <Link href="#" aria-label="TikTok">
+              <Link
+                href="https://www.tiktok.com/@malmina910?_t=ZS-8zDcOxA8Vlq&_r=1"
+                aria-label="TikTok"
+              >
                 <FaTiktok size={20} />
               </Link>
-              <Link href="#" aria-label="Pinterest">
+              <Link href="https://pin.it/6CkqZpKfX" aria-label="Pinterest">
                 <FaPinterest size={20} />
               </Link>
             </div>
@@ -125,15 +134,14 @@ const Footer = async () => {
           <div className="space-y-6">
             <h3 className="text-lg font-bold text-white">Contact</h3>
             <div className="space-y-3 text-sm">
-              <p>National Colony, Jaranwala Road, Faisalabad-Pakistan 38000</p>
-              <a href="tel:+923150895511" className="block hover:text-white">
-                +923150895511
+              <a href="tel:+923338328707" className="block hover:text-white">
+                +92 333 8328707
               </a>
               <a
                 href="mailto:sales@kuchijewels.com"
                 className="block hover:text-white"
               >
-                sales@MalminasTB.com
+                pairmanakakar@gmail.com
               </a>
             </div>
           </div>

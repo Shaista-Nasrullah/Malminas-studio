@@ -1,6 +1,7 @@
 // FILE: components/shared/ShopByCategory.tsx
 
 import { getHomepageCategories } from "@/lib/actions/category.actions";
+import { PRIMARY_COLOR } from "@/lib/constants";
 import { ArrowRight } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
@@ -23,7 +24,7 @@ const ShopByCategory = async () => {
   }
 
   return (
-    <section className="w-full py-7" style={{ backgroundColor: "#998B20" }}>
+    <section className="w-full py-7" style={{ backgroundColor: PRIMARY_COLOR }}>
       <div className="wrapper mx-auto px-4">
         <h2 className="text-3xl md:text-4xl font-bold text-white text-left mb-12">
           Shop By Category

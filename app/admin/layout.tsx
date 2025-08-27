@@ -28,7 +28,7 @@ export default async function AdminLayout({
           <div className="flex items-center h-25 px-4">
             <Link href="/" className="w-32">
               <Image
-                src="/images/logo-remvedBg.png"
+                src="/images/logoo.png"
                 height={88}
                 width={120}
                 alt={APP_NAME}
