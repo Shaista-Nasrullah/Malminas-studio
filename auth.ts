@@ -77,14 +77,7 @@ export const authConfig = {
       return session;
     },
     authorized({ request, auth }) {
-      const protectedPaths = [
-        /\/shipping-address/,
-        /\/payment-method/,
-        /\/place-order/,
-        /\/profile/,
-        /\/user\/(.*)/,
-        /\/admin/,
-      ];
+      const protectedPaths = [/\/profile/, /\/user\/(.*)/, /\/admin/];
       const { pathname } = request.nextUrl;
       if (!auth && protectedPaths.some((p) => p.test(pathname))) return false;
       if (!request.cookies.get("sessionCartId")) {

@@ -1,4 +1,3 @@
-// FILE: app/(auth)/sign-up/sign-up-form.tsx
 "use client";
 
 import { Button } from "@/components/ui/button";
@@ -6,20 +5,20 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { signUpDefaultValues } from "@/lib/constants";
 import Link from "next/link";
-// --- UPDATED ---: Swapped 'useActionState' for the stable 'useFormState'
-import { useFormState, useFormStatus } from "react-dom";
+import { useFormState, useFormStatus } from "react-dom"; // Keep useFormState
 import { signUpUser } from "@/lib/actions/user.actions";
-import { useSearchParams } from "next/navigation";
+import { useSearchParams } from "next/navigation"; // useRouter is no longer needed
 
 const SignUpForm = () => {
-  // --- UPDATED ---: Using useFormState
   const [data, action] = useFormState(signUpUser, {
     success: false,
     message: "",
   });
-
   const searchParams = useSearchParams();
   const callbackUrl = searchParams.get("callbackUrl") || "/";
+
+  // No useRouter or useEffect for redirection needed here.
+  // The server action's `signIn` call will handle the redirect directly.
 
   const SignUpButton = () => {
     const { pending } = useFormStatus();
@@ -32,6 +31,7 @@ const SignUpForm = () => {
 
   return (
     <form action={action}>
+      {/* callbackUrl needs to be passed if your NextAuth config uses it for redirects */}
       <input type="hidden" name="callbackUrl" value={callbackUrl} />
       <div className="space-y-6">
         <div>
@@ -79,7 +79,8 @@ const SignUpForm = () => {
         <div>
           <SignUpButton />
         </div>
-        {data && !data.success && (
+        {/* Only show error message if success is false AND there's a message */}
+        {!data.success && data.message && (
           <div className="text-center text-destructive">{data.message}</div>
         )}
         <div className="text-sm text-center text-muted-foreground">
