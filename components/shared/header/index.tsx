@@ -16,43 +16,45 @@ const Header = async () => {
   const rawCategories = await getCategoriesForNavigation();
   const cart = await getMyCart();
 
-  // --- 2. THIS IS THE FINAL FIX ---
-  // We explicitly type the parameters in the reduce function.
-  // 'acc' is the accumulator (a number), and 'item' is a CartItem.
   const itemsCount =
     cart?.items.reduce((acc: number, item: CartItem) => acc + item.qty, 0) || 0;
 
-  const categories = (rawCategories as unknown) as Category[];
+  const categories = rawCategories as unknown as Category[];
 
   return (
     <header className="sticky top-0 z-50 w-full bg-white shadow-sm">
       <TopHeader />
       <div className="w-full mx-auto">
-        <div className="wrapper grid grid-cols-3 h-36 items-center">
-          <div className="flex items-center justify-start gap-2 md:gap-3">
+        {/* Responsive height on mobile (5rem) and md+ (9rem) */}
+        <div className="flex items-center justify-between h-25 md:h-36 px-4 sm:px-6 md:px-8 max-w-screen-xl mx-auto pt-3">
+          {/* Left group: menu icon + search */}
+          <div className="flex items-center gap-4">
             <div className="lg:hidden">
               <CategoryDrawer categories={categories} />
             </div>
             <Search />
           </div>
 
-          <div className="flex justify-center">
-            <Link
-              href="/"
-              aria-label="Malminas Traditional Boutique Homepage"
-            >
+          {/* Center logo */}
+          <div className="flex justify-center flex-grow">
+            <Link href="/" aria-label="Malminas Traditional Boutique Homepage">
               <Image
                 src="/images/logoo.png"
                 alt="Malminas Traditional Boutique"
-                height={150}
-                width={180}
+                height={65}
+                width={145}
                 priority={true}
               />
             </Link>
           </div>
 
-          <div className="flex justify-end">
+          {/* Right group: cart and user icon */}
+          <div className="flex items-center gap-6">
             <Menu count={itemsCount} />
+            {/* If you have a user icon, add it here */}
+            {/* Example:
+                <UserIcon />
+            */}
           </div>
         </div>
 

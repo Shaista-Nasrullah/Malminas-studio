@@ -1,10 +1,9 @@
-// FILE: lib/actions/product.actions.ts
 "use server";
 
 import { prisma } from "@/db/prisma";
 import { formatError } from "../utils";
 import { LATEST_PRODUCTS_LIMIT } from "../constants";
-import { revalidatePath } from "next/cache";
+import { revalidatePath } from "next/cache"; // Import revalidateTag
 import { Prisma } from "@prisma/client";
 import { insertProductSchema, updateProductSchema } from "../validators";
 import { z } from "zod";
@@ -24,6 +23,7 @@ export async function getLatestProducts() {
 }
 
 export async function getProductBySlug(slug: string) {
+  console.log(`[getProductBySlug] Fetching product from DB for slug: ${slug}`); // Debug log
   const data = await prisma.product.findUnique({
     where: { slug },
     include: {
@@ -35,10 +35,18 @@ export async function getProductBySlug(slug: string) {
       subCategory: true,
     },
   });
+  if (data) {
+    console.log(
+      `[getProductBySlug] Found product: ${data.name}, Description: ${data.description}`
+    ); // Debug log
+  } else {
+    console.log(`[getProductBySlug] No product found for slug: ${slug}`); // Debug log
+  }
   return data;
 }
 
 export async function getProductById(productId: string) {
+  console.log(`[getProductById] Fetching product from DB for ID: ${productId}`); // Debug log
   const data = await prisma.product.findUnique({
     where: { id: productId },
   });
@@ -70,6 +78,7 @@ export async function getAllProducts({
   count: number;
   totalPages: number;
 }> {
+  // ... (rest of the function remains the same)
   const queryFilter: Prisma.ProductWhereInput =
     query && query !== "all"
       ? { name: { contains: query, mode: "insensitive" } }
@@ -112,9 +121,6 @@ export async function getAllProducts({
     ...availabilityFilter,
   };
 
-  // --- THIS IS THE FINAL FIX ---
-  // We explicitly give the 'orderBy' variable the exact type that Prisma expects for sorting.
-  // This removes any confusion for the TypeScript compiler.
   const orderBy: Prisma.ProductOrderByWithRelationInput =
     sort === "price-asc"
       ? { price: "asc" }
@@ -150,14 +156,20 @@ export async function getAllProducts({
   };
 }
 
-// --- ALL OTHER FUNCTIONS REMAIN UNCHANGED ---
-
 export async function deleteProduct(id: string) {
   try {
-    await prisma.product.delete({ where: { id } });
+    const deletedProduct = await prisma.product.delete({ where: { id } });
     revalidatePath("/admin/products");
+    revalidatePath(`/product/${deletedProduct.slug}`); // Revalidate the public product page
+    console.log(
+      `[deleteProduct] Deleted product with ID: ${id}. Revalidated /product/${deletedProduct.slug}`
+    ); // Debug log
     return { success: true, message: "Product deleted successfully" };
   } catch (error) {
+    console.error(
+      `[deleteProduct] Error deleting product with ID: ${id}`,
+      error
+    ); // Debug log
     return { success: false, message: formatError(error) };
   }
 }
@@ -170,10 +182,15 @@ export async function createProduct(data: z.infer<typeof insertProductSchema>) {
       ...restOfData,
       discountEndDate: discountEndDate ? new Date(discountEndDate) : null,
     };
-    await prisma.product.create({ data: dataForPrisma });
+    const newProduct = await prisma.product.create({ data: dataForPrisma });
     revalidatePath("/admin/products");
+    revalidatePath(`/product/${newProduct.slug}`); // Revalidate the new product's page
+    console.log(
+      `[createProduct] Created product: ${newProduct.name}. Revalidated /product/${newProduct.slug}`
+    ); // Debug log
     return { success: true, message: "Product created successfully" };
   } catch (error) {
+    console.error("[createProduct] Error creating product:", error); // Debug log
     return { success: false, message: formatError(error) };
   }
 }
@@ -187,14 +204,19 @@ export async function updateProduct(data: z.infer<typeof updateProductSchema>) {
       ...restOfData,
       discountEndDate: discountEndDate ? new Date(discountEndDate) : null,
     };
-    await prisma.product.update({
+    const updatedProduct = await prisma.product.update({
       where: { id },
       data: dataForPrisma,
     });
     revalidatePath("/admin/products");
     revalidatePath(`/admin/products/${id}/edit`);
+    revalidatePath(`/product/${updatedProduct.slug}`); // --- FIX 2: Revalidate the public product detail page ---
+    console.log(
+      `[updateProduct] Updated product with ID: ${id}. Revalidated paths: /admin/products, /admin/products/${id}/edit, /product/${updatedProduct.slug}`
+    ); // Debug log
     return { success: true, message: "Product updated successfully" };
   } catch (error) {
+    console.error(`[updateProduct] Error updating product with ID`, error); // Debug log
     return { success: false, message: formatError(error) };
   }
 }

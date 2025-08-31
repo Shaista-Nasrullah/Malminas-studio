@@ -1,8 +1,6 @@
-// FILE: app/(root)/product/[slug]/product-details-client.tsx
-
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Product, Cart } from "@/types";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
@@ -15,7 +13,7 @@ import ReviewList from "./review-list";
 
 interface ProductDetailsClientProps {
   product: Product;
-  cart: Cart | null; // This prop can be null
+  cart: Cart | null;
   userId: string | undefined;
   isDealInitiallyActive: boolean;
 }
@@ -28,17 +26,26 @@ export default function ProductDetailsClient({
 }: ProductDetailsClientProps) {
   const [isDealActive, setIsDealActive] = useState(isDealInitiallyActive);
 
+  // Debug log for client component
+  useEffect(() => {
+    console.log("[ProductDetailsClient] Component mounted.");
+    console.log("[ProductDetailsClient] Product props (Client):", product);
+    console.log(
+      "[ProductDetailsClient] Product Description from props (Client):",
+      product.description
+    );
+  }, [product]); // Dependency array includes product to re-log if product props change
+
   const handleDealEnd = () => {
     setIsDealActive(false);
+    console.log("[ProductDetailsClient] Deal ended."); // Debug log
   };
 
   const originalPrice = Number(product.price);
-
   const discount =
     isDealActive && typeof product.discountPercentage === "number"
       ? product.discountPercentage
       : 0;
-
   const displayPrice = originalPrice * (1 - discount / 100);
 
   return (
@@ -46,7 +53,6 @@ export default function ProductDetailsClient({
       <div className="col-span-1 md:col-span-2 md:sticky md:top-24 h-fit">
         <ProductImages images={product.images} />
       </div>
-
       <div className="col-span-1 md:col-span-3">
         <div className="space-y-8 p-8 md:p-12 lg:p-16 bg-white rounded-lg">
           <div className="space-y-3">
@@ -125,9 +131,6 @@ export default function ProductDetailsClient({
               {product.stock > 0 && (
                 <div className="pt-2">
                   <AddToCart
-                    // --- THIS IS THE FINAL FIX ---
-                    // If cart is null, pass undefined. Otherwise, pass the cart.
-                    // This satisfies the child component's required prop type.
                     cart={cart || undefined}
                     item={{
                       productId: product.id,

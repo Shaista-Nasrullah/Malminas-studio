@@ -3,7 +3,7 @@
 
 import { useEffect, useState, type FC } from "react";
 import { Instagram, ChevronLeft, ChevronRight } from "lucide-react";
-import { FaFacebook, FaYoutube, FaTiktok, FaPinterest } from "react-icons/fa";
+import { FaFacebook, FaTiktok, FaPinterest } from "react-icons/fa";
 import { type Announcement } from "@prisma/client";
 import { PRIMARY_COLOR } from "@/lib/constants";
 
@@ -68,12 +68,9 @@ export const AnnouncementCarousel: FC<AnnouncementCarouselProps> = ({
   return (
     <div
       style={{ backgroundColor: PRIMARY_COLOR }}
-      className="text-white w-full h-10 flex items-center"
+      className="text-white w-full flex items-center"
     >
-      {/* --- THIS IS THE FINAL FIX --- */}
-      {/* Updated grid classes for full responsiveness */}
-      <div className="wrapper mx-auto grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 items-center py-2 px-4 sm:px-6 lg:px-8 text-sm">
-        {/* Social Icons: Now visible on medium screens and up */}
+      <div className="wrapper mx-auto grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 items-center py-0 px-4 sm:px-6 lg:px-8 text-sm">
         <div className="hidden md:flex items-center gap-5 justify-self-start">
           {socialLinks.map((social) => (
             <a
@@ -89,24 +86,26 @@ export const AnnouncementCarousel: FC<AnnouncementCarouselProps> = ({
           ))}
         </div>
 
-        {/* Dynamic Announcement Carousel: Adjusts alignment for medium screens */}
-        <div className="flex items-center gap-4 sm:gap-6 justify-self-center md:justify-self-end lg:justify-self-center whitespace-nowrap">
+        <div className="flex items-center gap-4 sm:gap-6 justify-self-center md:justify-self-end lg:justify-self-center whitespace-normal max-w-full">
           <button
             aria-label="Previous Announcement"
-            className="hover:opacity-75 transition-opacity disabled:opacity-50"
+            className="hover:opacity-75 transition-opacity disabled:opacity-50 p-0"
             onClick={handlePrevious}
             disabled={announcements.length <= 1}
           >
             <ChevronLeft className="h-4 w-4" strokeWidth={2.5} />
           </button>
 
-          <span className="font-semibold tracking-wider text-center text-xs sm:text-sm">
+          <span
+            className="font-semibold tracking-wider text-center text-xs sm:text-sm break-words max-w-full leading-tight"
+            style={{ lineHeight: 1 }}
+          >
             {announcements[currentIndex].text}
           </span>
 
           <button
             aria-label="Next Announcement"
-            className="hover:opacity-75 transition-opacity disabled:opacity-50"
+            className="hover:opacity-75 transition-opacity disabled:opacity-50 p-0"
             onClick={handleNext}
             disabled={announcements.length <= 1}
           >
@@ -114,7 +113,6 @@ export const AnnouncementCarousel: FC<AnnouncementCarouselProps> = ({
           </button>
         </div>
 
-        {/* Spacer for large screen layout (unchanged) */}
         <div className="hidden lg:block justify-self-end"></div>
       </div>
     </div>

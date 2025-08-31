@@ -109,7 +109,7 @@ const OrderConfirmationDisplay = ({ order }: { order: Order }) => {
               style={{ backgroundColor: "#998B20" }}
               className="hover:bg-[#998B20]/90"
             >
-              <Link href="/products">Continue shopping</Link>
+              <Link href="/">Continue shopping</Link>
             </Button>
           </div>
           <CheckoutFooter />
