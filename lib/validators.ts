@@ -1,5 +1,3 @@
-
-
 import { z } from "zod";
 import { formatNumberWithDecimal } from "./utils";
 import { PAYMENT_METHODS } from "./constants";
@@ -90,6 +88,30 @@ export const signUpFormSchema = z
     confirmPassword: z
       .string()
       .min(6, "Confirm password must be at least 6 characters"),
+  })
+  .refine((data) => data.password === data.confirmPassword, {
+    message: "Passwords don't match",
+    path: ["confirmPassword"],
+  });
+
+// lib/validators.ts
+
+// ... existing imports and schemas
+
+export const forgotPasswordSchema = z.object({
+  email: z.string().email("Invalid email address"),
+});
+
+export const verifyOtpSchema = z.object({
+  email: z.string().email("Invalid email address"), // We need email to find the user
+  otp: z.string().length(6, "OTP must be 6 digits."), // Assuming 6-digit OTP
+});
+
+export const resetPasswordSchema = z
+  .object({
+    password: z.string().min(6, "Password must be at least 6 characters long"),
+    confirmPassword: z.string(),
+    email: z.string().email("Invalid email address"), // Need email to reset after verification
   })
   .refine((data) => data.password === data.confirmPassword, {
     message: "Passwords don't match",

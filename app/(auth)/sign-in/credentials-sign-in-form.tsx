@@ -64,7 +64,30 @@ const CredentialsSignInForm = () => {
             defaultValue={signInDefaultValues.password}
           />
         </div>
-        <div className="flex items-center space-x-2">
+        <div className="flex items-center justify-between space-x-2">
+          {" "}
+          {/* Modify this div */}
+          <div className="flex items-center space-x-2">
+            <Checkbox
+              id="remember-me"
+              checked={rememberMe}
+              onCheckedChange={(checked) => setRememberMe(Boolean(checked))}
+            />
+            <Label
+              htmlFor="remember-me"
+              className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+            >
+              Remember me
+            </Label>
+          </div>
+          <Link
+            href="/forgot-password" // NEW LINK
+            className="text-sm text-blue-600 hover:underline"
+          >
+            Forgot password?
+          </Link>
+        </div>
+        {/* <div className="flex items-center space-x-2">
           <Checkbox
             id="remember-me"
             checked={rememberMe}
@@ -76,7 +99,7 @@ const CredentialsSignInForm = () => {
           >
             Remember me
           </Label>
-        </div>
+        </div> */}
         <div>
           <SignInButton />
         </div>
