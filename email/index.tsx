@@ -22,7 +22,7 @@ export const sendPurchaseReceipt = async ({
     const { data, error } = await resend.emails.send({
       from: `${APP_NAME} <${SENDER_EMAIL}>`,
       to: order.user.email,
-      subject: `Order Confirmation ${order.id.substring(0, 8)}`, // Using a shorter ID
+      subject: `Order Confirmation ${order.id.substring(0, 8)}`, 
       react: <PurchaseReceiptEmail order={order} />,
     });
 

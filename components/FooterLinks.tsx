@@ -8,7 +8,7 @@ const footerLinks = [
   { href: "/pages/shipping-policy", text: "Shipping policy" },
   { href: "/pages/privacy-policy", text: "Privacy policy" },
   { href: "/pages/terms-of-service", text: "Terms of service" },
-  { href: "/pages/contact", text: "Contact information" },
+  { href: "/pages/contact-information", text: "Contact information" },
 ];
 
 const CheckoutFooter = () => {

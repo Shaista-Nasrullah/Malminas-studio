@@ -37,10 +37,10 @@ const Header = async () => {
 
           {/* Center logo */}
           <div className="flex justify-center flex-grow">
-            <Link href="/" aria-label="Malminas Traditional Boutique Homepage">
+            <Link href="/" aria-label="Malminas Traditional Wear Homepage">
               <Image
                 src="/images/logoo.png"
-                alt="Malminas Traditional Boutique"
+                alt="Malminas Traditional Wear"
                 height={65}
                 width={145}
                 priority={true}

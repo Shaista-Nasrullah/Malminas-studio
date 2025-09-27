@@ -1,5 +1,3 @@
-// FILE: app/(root)/product/[slug]/review-list.tsx
-
 "use client";
 
 import { useEffect } from "react";
@@ -69,23 +67,27 @@ const ReviewList = ({
         {reviews.map((review) => (
           <Card key={review.id}>
             <CardHeader>
-              <div className="flex-between">
-                <CardTitle>{review.title}</CardTitle>
+              {/* On small screens, flex-col stacks items, on larger screens, it's a row with space between */}
+              <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start">
+                <CardTitle className="mb-2 sm:mb-0">{review.title}</CardTitle>
+                {/* You can add more elements here if needed, they will align responsively */}
               </div>
               <CardDescription>{review.description}</CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="flex space-x-4 text-sm text-muted-foreground">
-                <Rating value={review.rating} />
-                <div className="flex items-center">
+              {/* On small screens, stack the rating, user, and date vertically. On larger screens, keep them in a row. */}
+              <div className="flex flex-col sm:flex-row sm:items-center sm:space-x-4 text-sm text-muted-foreground">
+                <div className="mb-2 sm:mb-0">
+                  {" "}
+                  {/* Added div for spacing */}
+                  <Rating value={review.rating} />
+                </div>
+                <div className="flex items-center mb-2 sm:mb-0">
                   <User className="mr-1 h-3 w-3" />
                   {review.user ? review.user.name : "User"}
                 </div>
                 <div className="flex items-center">
                   <Calendar className="mr-1 h-3 w-3" />
-                  {/* --- THIS IS THE FINAL FIX --- */}
-                  {/* We convert the 'createdAt' string back into a Date object */}
-                  {/* right before passing it to the formatting function. */}
                   {formatDateTime(new Date(review.createdAt)).dateTime}
                 </div>
               </div>

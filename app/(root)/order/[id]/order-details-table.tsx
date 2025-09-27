@@ -100,7 +100,10 @@ const OrderConfirmationDisplay = ({ order }: { order: Order }) => {
           <div className="flex items-center justify-between">
             <p className="text-sm text-gray-600">
               Need help?{" "}
-              <Link href="/contact" className="text-[#998B20] hover:underline">
+              <Link
+                href="/pages/contact-information"
+                className="text-[#998B20] hover:underline"
+              >
                 Contact us
               </Link>
             </p>

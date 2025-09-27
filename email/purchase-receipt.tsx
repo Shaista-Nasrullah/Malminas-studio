@@ -14,12 +14,8 @@ import {
   Tailwind,
   Text,
 } from "@react-email/components";
-import { Order, ShippingAddress } from "@/types"; // Make sure ShippingAddress is imported
+import { Order, ShippingAddress } from "@/types";
 import { formatCurrency } from "@/lib/utils";
-
-// This is just for previewing in development, can be left as is.
-// import sampleData from "@/db/sample-data";
-// PurchaseReceiptEmail.PreviewProps = { ... };
 
 const dateFormatter = new Intl.DateTimeFormat("en", { dateStyle: "medium" });
 

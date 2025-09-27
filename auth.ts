@@ -66,6 +66,8 @@ export const authConfig = {
         token.role = user.role;
         token.name = user.name;
       }
+
+      
       return token;
     },
     async session({ session, token }) {
