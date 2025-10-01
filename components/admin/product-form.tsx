@@ -375,14 +375,8 @@ const ProductForm = ({
                               }
                             }}
                             onUploadError={(error) => {
-                              // --- FIXED HERE ---
                               toast.error(error.message);
                             }}
-                            // onUploadError={(error: Error) => {
-                            //   toast.error("An error occurred", {
-                            //     description: error.message,
-                            //   });
-                            // }}
                           />
                         </div>
                       </FormControl>

@@ -185,7 +185,6 @@ const CategoryForm = ({
                             }
                           }}
                           onUploadError={(error) => {
-                            // --- FIXED HERE ---
                             toast.error(error.message);
                           }}
                         />
