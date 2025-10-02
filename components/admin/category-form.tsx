@@ -170,7 +170,25 @@ const CategoryForm = ({
                         </Button>
                       </div>
                     ))}
-                    <FormControl>
+                    <UploadButton
+                      endpoint="imageUploader"
+                      onClientUploadComplete={(res) => {
+                        if (res && res.length > 0) {
+                          form.setValue("images", [
+                            ...(images || []),
+                            res[0].url,
+                          ]);
+                          toast.success("Image uploaded successfully!");
+                        }
+                      }}
+                      onUploadError={(error) => {
+                        console.error("Upload Error:", error);
+                        toast.error(
+                          "Upload failed: " + (error.message || "Unknown error")
+                        );
+                      }}
+                    />
+                    {/* <FormControl>
                       <div className="w-24 h-24 flex items-center justify-center border-2 border-dashed rounded-md">
                         <UploadButton
                           endpoint="imageUploader"
@@ -194,67 +212,12 @@ const CategoryForm = ({
                           }}
                         />
                       </div>
-                    </FormControl>
+                    </FormControl> */}
                   </div>
                   <FormMessage />
                 </FormItem>
               )}
             />
-            {/* <FormField
-              control={form.control}
-              name="images"
-              render={() => (
-                <FormItem className="w-full">
-                  <FormLabel>Images</FormLabel>
-                  <div className="flex flex-wrap items-start gap-4">
-                    {images?.map((image) => (
-                      <div key={image} className="relative group">
-                        <Image
-                          src={image}
-                          alt="category image"
-                          width={96}
-                          height={96}
-                          className="w-24 h-24 object-cover rounded-md"
-                        />
-                        <Button
-                          type="button"
-                          variant="destructive"
-                          size="icon"
-                          className="absolute top-1 right-1 h-5 w-5 opacity-0 group-hover:opacity-100 transition-opacity"
-                          onClick={() => handleImageDelete(image)}
-                        >
-                          <X className="h-4 w-4" />
-                        </Button>
-                      </div>
-                    ))}
-                    <FormControl>
-                      <div className="w-24 h-24 flex items-center justify-center border-2 border-dashed rounded-md">
-                        <UploadButton
-                          endpoint="imageUploader"
-                          onClientUploadComplete={(res) => {
-                            if (res) {
-                              const newUrls = res.map((r) => r.url);
-                              form.setValue("images", [
-                                ...(images || []),
-                                ...newUrls,
-                              ]);
-                              toast.success("Image(s) uploaded.");
-                            }
-                          }}
-                          // --- THIS IS THE FINAL FIX ---
-                          // We wrap the call in curly braces to ensure the function
-                          // implicitly returns 'void', satisfying the prop's type.
-                          onUploadError={(error) => {
-                            toast.error(error.message);
-                          }}
-                        />
-                      </div>
-                    </FormControl>
-                  </div>
-                  <FormMessage />
-                </FormItem>
-              )}
-            /> */}
           </CardContent>
         </Card>
 
