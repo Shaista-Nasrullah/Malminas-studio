@@ -184,11 +184,13 @@ const CategoryForm = ({
                               toast.success("Image(s) uploaded.");
                             }
                           }}
-                          onUploadError={(error: Error) => {
-                            // Explicitly type 'error' as Error
-                            toast.error(error.message);
-                            console.error("Client Upload Error:", error); // Add client-side error log
-                            // You might want to log more details from the error object if available
+                          onUploadError={(error) => {
+                            console.error("UploadThing Client Error:", error); // Log the full error object
+                            toast.error(
+                              error.message ||
+                                "An unknown upload error occurred."
+                            );
+                            // You can also consider showing a more user-friendly message or retrying
                           }}
                         />
                       </div>
