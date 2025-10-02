@@ -170,24 +170,30 @@ const CategoryForm = ({
                         </Button>
                       </div>
                     ))}
-                    <UploadButton
-                      endpoint="imageUploader"
-                      onClientUploadComplete={(res) => {
-                        if (res && res.length > 0) {
-                          form.setValue("images", [
-                            ...(images || []),
-                            res[0].url,
-                          ]);
-                          toast.success("Image uploaded successfully!");
-                        }
-                      }}
-                      onUploadError={(error) => {
-                        console.error("Upload Error:", error);
-                        toast.error(
-                          "Upload failed: " + (error.message || "Unknown error")
-                        );
-                      }}
-                    />
+                    <div className="w-24 h-24 flex items-center justify-center border-2 border-dashed rounded-md">
+                      <UploadButton
+                        endpoint="imageUploader"
+                        onClientUploadComplete={(res) => {
+                          if (res) {
+                            const newUrls = res.map((r) => r.url);
+                            form.setValue("images", [
+                              ...(images || []),
+                              ...newUrls,
+                            ]);
+                            // Replaced toast.success with console.log
+                            console.log(
+                              "Image(s) uploaded successfully:",
+                              newUrls
+                            );
+                          }
+                        }}
+                        onUploadError={(error: Error) => {
+                          // Replaced toast.error with console.error
+                          console.error("Upload Error:", error.message, error);
+                          // Log the full error object for more details
+                        }}
+                      />
+                    </div>
                     {/* <FormControl>
                       <div className="w-24 h-24 flex items-center justify-center border-2 border-dashed rounded-md">
                         <UploadButton
