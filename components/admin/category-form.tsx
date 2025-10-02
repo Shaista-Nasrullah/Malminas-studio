@@ -93,7 +93,7 @@ const CategoryForm = ({
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
         <Card>
           <CardHeader>
-            <CardTitle>Category Details</CardTitle>
+            <CardTitle>Insert Category Details</CardTitle>
           </CardHeader>
           <CardContent className="space-y-6">
             <div className="flex flex-col md:flex-row gap-5">
