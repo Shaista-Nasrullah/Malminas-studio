@@ -76,14 +76,7 @@ const CheckoutForm = ({ user }: CheckoutFormProps) => {
           toast.success("Order placed successfully!");
           router.push(result.redirectTo);
         } else {
-          if (result.errorType === "ACCOUNT_EXISTS") {
-            toast.error(result.message, {
-              description:
-                "Please log in to use this email or use a different one.",
-            });
-          } else {
-            toast.error(result.message || "An unexpected error occurred.");
-          }
+          toast.error("Failed to place order. Please try again.");
         }
       } catch (error) {
         toast.error((error as Error).message);
