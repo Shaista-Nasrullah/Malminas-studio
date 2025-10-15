@@ -154,15 +154,19 @@ export const shippingAddressSchema = z.object({
   lng: z.number().optional(),
 });
 
-// --- THIS IS THE NEWLY ADDED SCHEMA ---
-// This schema validates the data we expect from the client-side checkout form.
-export const placeOrderSchema = shippingAddressSchema.extend({
-  email: z.string().email("A valid email is required for the order."),
+// Schema for inserting order
+export const placeOrderSchema = z.object({
+  userId: z.string().min(1, "User is required"),
+  itemsPrice: currency,
+  shippingPrice: currency,
+  taxPrice: currency,
+  totalPrice: currency,
   paymentMethod: z.string().refine((data) => PAYMENT_METHODS.includes(data), {
-    message: "Invalid payment method selected",
+    message: "Invalid payment method",
   }),
+  shippingAddress: shippingAddressSchema,
+  postexTrackingNumber: z.string().nullable().optional(),
 });
-// --- END OF NEW SCHEMA ---
 
 // Schema for payment method
 export const paymentMethodSchema = z
