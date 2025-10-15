@@ -17,7 +17,7 @@ const ProductCard = ({ product }: { product: Product }) => {
   const displayPrice = originalPrice * (1 - discount / 100);
 
   return (
-    <div className="flex flex-col h-full overflow-hidden group border border-gray-200 hover:shadow-xl transition-shadow duration-300 bg-white md:p-5">
+    <div className="flex flex-col h-full overflow-hidden group border border-gray-200 hover:shadow-xl transition-shadow duration-300 bg-white p-3 md:p-5">
       {/* Replaces CardHeader */}
       <div className="p-0 relative">
         <Link href={`/product/${product.slug}`} className="block">
