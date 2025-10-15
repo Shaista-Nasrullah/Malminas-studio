@@ -14,6 +14,20 @@ import { revalidatePath } from "next/cache";
 import { sendPurchaseReceipt } from "@/email";
 import { cookies } from "next/headers";
 import z from "zod";
+import { postexFetch } from "@/lib/postex";
+
+// FILE: lib/actions/order.actions.ts
+
+// Retrieve the PostEx Pickup Address Code from environment variables
+const POSTEX_PICKUP_ADDRESS_CODE = process.env.POSTEX_PICKUP_ADDRESS_CODE;
+// You can add a check to ensure it's defined if you want to fail early
+if (!POSTEX_PICKUP_ADDRESS_CODE) {
+  console.warn(
+    "WARNING: POSTEX_PICKUP_ADDRESS_CODE is not defined in environment variables. PostEx orders might fail."
+  );
+  // Optionally, you might want to throw an error here to prevent orders from being placed without it:
+  // throw new Error("POSTEX_PICKUP_ADDRESS_CODE must be defined in your environment variables.");
+}
 
 export const placeOrder = async (
   formData: z.infer<typeof placeOrderSchema>
@@ -27,17 +41,15 @@ export const placeOrder = async (
     } else {
       const { email, fullName } = formData;
       const existingUser = await prisma.user.findUnique({ where: { email } });
+
       if (existingUser) {
-        return {
-          success: false,
-          message: "An account with this email already exists.",
-          errorType: "ACCOUNT_EXISTS",
-        };
+        userId = existingUser.id;
+      } else {
+        const newUser = await prisma.user.create({
+          data: { email, name: fullName },
+        });
+        userId = newUser.id;
       }
-      const newUser = await prisma.user.create({
-        data: { email, name: fullName },
-      });
-      userId = newUser.id;
     }
 
     const cart = await getMyCart();
@@ -66,10 +78,68 @@ export const placeOrder = async (
 
     const validatedOrder = insertOrderSchema.parse(orderDataToValidate);
 
+    let postexTrackingNumber: string | null = null;
+    try {
+      // Only proceed with PostEx if the pickup address code is available
+      if (POSTEX_PICKUP_ADDRESS_CODE) {
+        const postexOrderPayload = {
+          cityName: formData.city,
+          customerName: formData.fullName,
+          customerPhone: formData.phone,
+          deliveryAddress: `${formData.streetAddress}, ${formData.city}, ${formData.country} - ${formData.postalCode}`,
+          invoiceDivision: 0,
+          invoicePayment: parseFloat(validatedOrder.totalPrice.toString()),
+          items: cart.items.reduce((sum, item) => sum + item.qty, 0),
+          orderDetail: cart.items
+            .map((item) => `${item.name} (Qty: ${item.qty})`)
+            .join(", "),
+          orderRefNumber: `YOUR_STORE_PREFIX-${Date.now()}-${userId.substring(
+            0,
+            5
+          )}`,
+          orderType: "Normal",
+          transactionNotes: "E-commerce order via website",
+          pickupAddressCode: POSTEX_PICKUP_ADDRESS_CODE, // <<<--- Using the env var here
+          // If you have a storeAddressCode from PostEx, you can add it here too:
+          // storeAddressCode: process.env.POSTEX_STORE_ADDRESS_CODE,
+        };
+
+        const postexResponse = await postexFetch<{
+          statusCode: string;
+          statusMessage: string;
+          dist: {
+            trackingNumber: string;
+            orderStatus: string;
+            orderDate: string;
+          };
+        }>("/v3/create-order", {
+          method: "POST",
+          body: JSON.stringify(postexOrderPayload),
+        });
+
+        if (postexResponse.statusCode === "200") {
+          postexTrackingNumber = postexResponse.dist.trackingNumber;
+          console.log("PostEx Order Created:", postexTrackingNumber);
+        } else {
+          console.error(
+            "Failed to create PostEx order:",
+            postexResponse.statusMessage
+          );
+        }
+      } else {
+        console.warn(
+          "Skipping PostEx order creation because POSTEX_PICKUP_ADDRESS_CODE is not configured."
+        );
+      }
+    } catch (postexError) {
+      console.error("Error creating PostEx order:", postexError);
+    }
+
     const newOrder = await prisma.$transaction(async (tx) => {
       const order = await tx.order.create({
         data: {
           ...validatedOrder,
+          postexTrackingNumber: postexTrackingNumber,
           orderitems: {
             create: cart.items.map((item) => ({
               name: item.name,
@@ -103,8 +173,6 @@ export const placeOrder = async (
       });
 
       if (fullOrderForEmail) {
-        // --- THIS IS THE FINAL FIX ---
-        // We manually convert all fields to match the global 'Order' type
         const formattedOrderForEmail: Order = {
           ...fullOrderForEmail,
           itemsPrice: fullOrderForEmail.itemsPrice.toString(),
@@ -151,8 +219,6 @@ export const placeOrder = async (
     };
   }
 };
-
-// ... ALL OTHER FUNCTIONS IN THIS FILE ARE CORRECT AND DO NOT NEED TO BE CHANGED ...
 
 export async function getOrderById(orderId: string) {
   const data = await prisma.order.findFirst({

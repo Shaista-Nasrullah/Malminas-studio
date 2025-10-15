@@ -10,7 +10,7 @@ import { redirect } from "next/navigation";
 import ContactInformation from "@/components/checkout/ContactInformation";
 import CheckoutFooter from "@/components/FooterLinks";
 
-// --- ADDED ---: A specific type for the user's shipping address
+
 type ShippingAddress = {
   fullName: string;
   streetAddress: string;

@@ -8,12 +8,9 @@ import { Order } from "@/types";
 import { formatCurrency, formatId } from "@/lib/utils";
 import { CheckCircle2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-// import OrderMap from "@/components/orders/OrderMap"; // Using the path to our new simple iframe map
 import CheckoutFooter from "@/components/FooterLinks";
 import OrderMap from "@/components/OrderMap";
 
-// --- 1. SIMPLIFY PROPS ---
-// We go back to only needing the 'order' object. The 'position' prop is removed.
 const OrderConfirmationDisplay = ({ order }: { order: Order }) => {
   const {
     id,
@@ -44,6 +41,19 @@ const OrderConfirmationDisplay = ({ order }: { order: Order }) => {
               </h1>
             </div>
           </div>
+          {order.postexTrackingNumber && (
+            <p>
+              PostEx Tracking Number:{" "}
+              <a
+                href={`https://postex.pk/track?cn=${order.postexTrackingNumber}`} // Assuming this is their public tracking URL
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-blue-600 hover:underline"
+              >
+                {order.postexTrackingNumber}
+              </a>
+            </p>
+          )}
 
           {/* --- 3. CALL THE SIMPLE IFRAME MAP --- */}
           {/* This now directly passes the address string to our simple OrderMap component. */}

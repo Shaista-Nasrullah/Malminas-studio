@@ -8,16 +8,18 @@ const IconBoxes = () => {
         <CardContent className="wrapper grid md:grid-cols-4 gap-4 p-4">
           <div className="space-y-2">
             <ShoppingBag />
-            <div className="text-sm font-bold">Free Shipping</div>
+            <div className="text-sm font-bold">Shipping Cost</div>
             <div className="text-sm text-muted-foreground">
-              Free shipping on orders above Rs. 5000
+              Based on weight & location
             </div>
           </div>
           <div className="space-y-2">
             <Currency />
-            <div className="text-sm font-bold">Money Back Guarantee</div>
+            <div className="text-sm font-bold">
+              Product Replacement Guarantee
+            </div>
             <div className="text-sm text-muted-foreground">
-              Within 14 days of purchase
+              If customer is not satisfied
             </div>
           </div>
           <div className="space-y-2">

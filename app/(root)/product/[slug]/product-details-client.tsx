@@ -50,7 +50,7 @@ export default function ProductDetailsClient({
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-5 gap-8 lg:gap-12 items-start">
-      <div className="col-span-1 md:col-span-2 md:sticky md:top-24 h-fit">
+      <div className="col-span-1 md:col-span-2 md:sticky md:top-24 h-fit ">
         <ProductImages images={product.images} />
       </div>
       <div className="col-span-1 md:col-span-3">
