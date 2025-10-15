@@ -186,6 +186,7 @@ export const insertOrderSchema = z.object({
     message: "Invalid payment method",
   }),
   shippingAddress: shippingAddressSchema,
+  postexTrackingNumber: z.string().nullable().optional(),
 });
 
 // Schema for inserting an order item
