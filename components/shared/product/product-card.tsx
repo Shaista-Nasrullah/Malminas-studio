@@ -34,7 +34,9 @@ const ProductCard = ({ product }: { product: Product }) => {
       </div>
 
       {/* Replaces CardContent */}
-      <div className="p-2 flex-grow flex flex-col">
+      <div className="p-2 flex-grow flex flex-col items-center text-center">
+        {" "}
+        {/* Added items-center and text-center here */}
         <div className="flex-grow">
           <h3 className="text-sm sm:text-base font-normal tracking-tight min-h-14 leading-tight hover:text-primary transition-colors">
             <Link href={`/product/${product.slug}`}>{product.name}</Link>
@@ -46,10 +48,10 @@ const ProductCard = ({ product }: { product: Product }) => {
               <p className="text-gray-500 line-through text-xs sm:text-sm">
                 Rs.{originalPrice.toFixed(0)}
               </p>
-              <p className="text-sm sm:text-base font-normal text-gray-800">{`Rs.${displayPrice.toFixed(0)}`}</p>
+              <p className="text-sm sm:text-base font-normal text-gray-900">{`Rs.${displayPrice.toFixed(0)}`}</p>
             </>
           ) : (
-            <p className="text-sm sm:text-base font-normal text-gray-800">{`Rs.${originalPrice.toFixed(0)}`}</p>
+            <p className="text-lg sm:text-base font-semibold text-gray-900">{`Rs.${originalPrice.toFixed(0)}`}</p>
           )}
         </div>
       </div>
