@@ -12,12 +12,12 @@ const ProductList = ({
 }) => {
   const limitedData = limit ? data.slice(0, limit) : data;
   return (
-    <div className="mx-5 my-10">
+    <div className="mx-5 my-10 bg-[#fafbfc]">
       <h2 className="h2-bold mb-4">{title}</h2>
       {data.length > 0 ? (
         // --- THIS IS THE CORRECTED LINE ---
         // Default to 2 columns, then switch to 4 columns on large screens.
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 ">
           {limitedData.map((product: Product) => (
             <ProductCard key={product.slug} product={product} />
           ))}

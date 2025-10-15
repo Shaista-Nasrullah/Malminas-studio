@@ -17,7 +17,7 @@ const ProductCard = ({ product }: { product: Product }) => {
   const displayPrice = originalPrice * (1 - discount / 100);
 
   return (
-    <div className="flex flex-col h-full overflow-hidden group border border-gray-200 hover:shadow-xl transition-shadow duration-300 bg-[rgb(253,253,253)] md:p-5">
+    <div className="flex flex-col h-full overflow-hidden group border border-gray-200 hover:shadow-xl transition-shadow duration-300 bg-white md:p-5">
       {/* Replaces CardHeader */}
       <div className="p-0 relative">
         <Link href={`/product/${product.slug}`} className="block">
@@ -38,7 +38,7 @@ const ProductCard = ({ product }: { product: Product }) => {
         {" "}
         {/* Added items-center and text-center here */}
         <div className="flex-grow">
-          <h3 className="text-sm sm:text-base font-normal tracking-tight min-h-14 leading-tight hover:text-primary transition-colors">
+          <h3 className="text-sm sm:text-base font-normal text-gray-1000 tracking-tight min-h-14 leading-tight hover:text-primary transition-colors">
             <Link href={`/product/${product.slug}`}>{product.name}</Link>
           </h3>
         </div>
